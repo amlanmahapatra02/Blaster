@@ -6,6 +6,8 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Blaster/Weapon.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -53,6 +55,47 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	//Action Binding
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 
+}
+
+void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+}
+
+void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
+{
+	//for server pawn overlap end
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(false);
+	}
+
+	//for server pawn overlap begin
+	OverlappingWeapon = Weapon;
+	
+	if (IsLocallyControlled())
+	{
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
+	}
+}
+
+void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
+{
+	//for client pawn overlap begin
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(true);
+	}
+
+	if (LastWeapon)
+	{
+		LastWeapon->ShowPickupWidget(false);
+	}
 }
 
 void ABlasterCharacter::MoveForward(float Value)
