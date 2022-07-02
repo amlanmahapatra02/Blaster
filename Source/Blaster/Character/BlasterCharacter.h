@@ -26,6 +26,9 @@ protected:
 	void Turn(float Value);
 	void Lookup(float Value);
 	void EquipButtonPressed();
+	void CrouchButtonPressed();
+	void AimButtonPressed();
+	void AimButtonReleased();
 
 public:	
 	// Called every frame
@@ -61,6 +64,6 @@ private:
 
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
-
 	bool IsWeaponEquipped();
+	bool IsAiming();
 };
