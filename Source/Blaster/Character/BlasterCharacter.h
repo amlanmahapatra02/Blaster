@@ -15,6 +15,8 @@ public:
 	// Sets default values for this character's properties
 	ABlasterCharacter();
 
+	virtual void PostInitializeComponents()override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -23,6 +25,7 @@ protected:
 	void MoveRight(float Value);
 	void Turn(float Value);
 	void Lookup(float Value);
+	void EquipButtonPressed();
 
 public:	
 	// Called every frame
@@ -50,6 +53,14 @@ private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
+	UFUNCTION(Server, Reliable)
+	void ServerEquipButtonPressed();
+
+	UPROPERTY(VisibleAnywhere)
+	class UCombatComponent* Combat;
+
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
+
+	bool IsWeaponEquipped();
 };

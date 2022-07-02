@@ -8,6 +8,7 @@
 #include "Components/WidgetComponent.h"
 #include "Blaster/Weapon.h"
 #include "Net/UnrealNetwork.h"
+#include "Blaster/CombatComponent.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -32,7 +33,11 @@ ABlasterCharacter::ABlasterCharacter()
 	//OverheadWidget
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
+
+	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	Combat->SetIsReplicated(true);
 }
+
 
 // Called when the game starts or when spawned
 void ABlasterCharacter::BeginPlay()
@@ -54,6 +59,9 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	//Action Binding
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+
+	//Equip
+	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ABlasterCharacter::EquipButtonPressed);
 
 }
 
@@ -84,6 +92,11 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 	}
 }
 
+bool ABlasterCharacter::IsWeaponEquipped()
+{
+	return (Combat && Combat->EquippedWeapon);
+}
+
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 {
 	//for client pawn overlap begin
@@ -95,6 +108,15 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	if (LastWeapon)
 	{
 		LastWeapon->ShowPickupWidget(false);
+	}
+}
+
+void ABlasterCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	if (Combat)
+	{
+		Combat->Character = this;
 	}
 }
 
@@ -126,6 +148,33 @@ void ABlasterCharacter::Turn(float Value)
 void ABlasterCharacter::Lookup(float Value)
 {
 	AddControllerPitchInput(Value);
+}
+
+//All the overlapping event occurs on server, so we need to send rpc to clients
+void ABlasterCharacter::EquipButtonPressed()
+{
+	if (Combat)
+	{
+		if (HasAuthority())
+		{
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+
+		else
+		{
+			ServerEquipButtonPressed();
+		}
+		
+	}
+}
+
+//Client Equip button pressed respones
+void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
+{
+	if (Combat)
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
 }
 
 // Called every frame
