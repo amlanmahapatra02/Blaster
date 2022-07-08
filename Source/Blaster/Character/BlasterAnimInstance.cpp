@@ -4,6 +4,7 @@
 #include "BlasterAnimInstance.h"
 #include "BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -33,5 +34,20 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
 		bIsCrouched = BlasterCharacter->bIsCrouched;
 		bAiming = BlasterCharacter->IsAiming();
+
+		//Offset Yaw for Strafing (Replicated both on Server and Clients)
+		FRotator AimRotation = BlasterCharacter->GetBaseAimRotation();
+		FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(BlasterCharacter->GetVelocity());
+		FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
+		DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, InterpSpeed);
+		YawOffset = DeltaRotation.Yaw;
+
+		//Lean (Replicated both on Server and Clients)
+		CharacterRotationLastFrame = CharacterRotationCurrentFrame;
+		CharacterRotationCurrentFrame = BlasterCharacter->GetActorRotation();
+		const FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotationCurrentFrame, CharacterRotationLastFrame);
+		const float Target = Delta.Yaw / DeltaTime;
+		const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, InterpSpeed);
+		Lean = FMath::Clamp(Interp, -89.f, 89.f);
 	}
 }
