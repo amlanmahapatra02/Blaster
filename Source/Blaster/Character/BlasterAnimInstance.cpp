@@ -30,7 +30,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		Speed = Velocity.Size();
 
 		bIsInAir = BlasterCharacter->GetCharacterMovement()->IsFalling();
-		bisAccelerating = BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.0f ? true : false;
+		bIsAccelerating = BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.0f ? true : false;
 		bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
 		bIsCrouched = BlasterCharacter->bIsCrouched;
 		bAiming = BlasterCharacter->IsAiming();
@@ -48,6 +48,6 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		const FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotationCurrentFrame, CharacterRotationLastFrame);
 		const float Target = Delta.Yaw / DeltaTime;
 		const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, InterpSpeed);
-		Lean = FMath::Clamp(Interp, -89.f, 89.f);
+		Lean = FMath::Clamp(Interp, -60.f, 60.f);
 	}
 }
