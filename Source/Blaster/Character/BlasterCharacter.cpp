@@ -59,7 +59,6 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCo
 	PlayerInputComponent->BindAxis("MoveRight", this, &ABlasterCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Turn", this, &ABlasterCharacter::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &ABlasterCharacter::Lookup);
-	Pla
 
 	// Jumping
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
@@ -119,6 +118,14 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	}
 
 	AO_Pitch = GetBaseAimRotation().Pitch;
+
+	if(AO_Pitch > 90.0f && !IsLocallyControlled())
+	{
+		//map pitch from [270,360) to [-90,0)
+		FVector2D InRange(270.f, 360.f);
+		FVector2D OutRange(-90.f, 0.f);
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon *Weapon)
