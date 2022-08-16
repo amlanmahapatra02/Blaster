@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "BlasterAnimInstance.h"
 #include "BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -35,19 +34,22 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		bIsCrouched = BlasterCharacter->bIsCrouched;
 		bAiming = BlasterCharacter->IsAiming();
 
-		//Offset Yaw for Strafing (Replicated both on Server and Clients)
+		// Offset Yaw for Strafing (Replicated both on Server and Clients)
 		FRotator AimRotation = BlasterCharacter->GetBaseAimRotation();
 		FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(BlasterCharacter->GetVelocity());
 		FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
 		DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, InterpSpeed);
 		YawOffset = DeltaRotation.Yaw;
 
-		//Lean (Replicated both on Server and Clients)
+		// Lean (Replicated both on Server and Clients)
 		CharacterRotationLastFrame = CharacterRotationCurrentFrame;
 		CharacterRotationCurrentFrame = BlasterCharacter->GetActorRotation();
 		const FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotationCurrentFrame, CharacterRotationLastFrame);
 		const float Target = Delta.Yaw / DeltaTime;
 		const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, InterpSpeed);
 		Lean = FMath::Clamp(Interp, -60.f, 60.f);
+
+		AO_Yaw = BlasterCharacter->GetAO_Yaw();
+		AO_Pitch = BlasterCharacter->GetAO_Pitch();
 	}
 }

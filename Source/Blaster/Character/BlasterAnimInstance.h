@@ -7,7 +7,7 @@
 #include "BlasterAnimInstance.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class BLASTER_API UBlasterAnimInstance : public UAnimInstance
@@ -21,7 +21,7 @@ public:
 
 private:
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-	class ABlasterCharacter* BlasterCharacter;
+	class ABlasterCharacter *BlasterCharacter;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	float Speed;
@@ -31,7 +31,7 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bIsAccelerating;
-	
+
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bWeaponEquipped;
 
@@ -51,4 +51,10 @@ private:
 	FRotator CharacterRotationLastFrame;
 	FRotator CharacterRotationCurrentFrame;
 	FRotator DeltaRotation;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float AO_Yaw;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float AO_Pitch;
 };
