@@ -158,6 +158,16 @@ bool ABlasterCharacter::IsAiming()
 	return (Combat && Combat->bAiming);
 }
 
+AWeapon* ABlasterCharacter::GetEquippedWeapon()
+{
+	if (Combat)
+	{
+		return Combat->EquippedWeapon;
+	}
+
+	return nullptr;
+}
+
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
 {
 	// for client pawn overlap begin
