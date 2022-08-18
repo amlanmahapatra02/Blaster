@@ -229,11 +229,13 @@ void ABlasterCharacter::EquipButtonPressed()
 		if (HasAuthority())
 		{
 			Combat->EquipWeapon(OverlappingWeapon);
+			UE_LOG(LogTemp,Warning,TEXT("Equipped Weapon Pressed on Server"));
 		}
 
 		else
 		{
 			ServerEquipButtonPressed();
+			UE_LOG(LogTemp,Warning,TEXT("Equipped Weapon Pressed on Client"));
 		}
 	}
 }

@@ -1,0 +1,6 @@
+"/media/Hdd/Unreal Projects/Blaster/Plugins/Developer/RiderSourceCodeAccess/Intermediate/Build/Linux/B4D820EA/UnrealEditor/Development/RiderSourceCodeAccess/Module.RiderSourceCodeAccess.cpp.o"
+ -soname="libUnrealEditor-RiderSourceCodeAccess.so"
+ -rpath-link="/media/Hdd/Unreal Projects/Blaster/Plugins/Developer/RiderSourceCodeAccess/Binaries/Linux"
+ -L"/media/Hdd/UnrealEngine/Engine/Binaries/Linux"
+ --start-group
+ --end-group
