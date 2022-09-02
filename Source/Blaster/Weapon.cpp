@@ -6,6 +6,7 @@
 #include "Components/WidgetComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Net/UnrealNetwork.h"
+#include "Animation/AnimationAsset.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -101,6 +102,14 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		ShowPickupWidget(false);
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
+	}
+}
+
+void AWeapon::Fire()
+{
+	if (FireAnimation)
+	{
+		WeaponMesh->PlayAnimation(FireAnimation, false);
 	}
 }
 

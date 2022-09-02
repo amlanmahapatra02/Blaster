@@ -10,6 +10,7 @@
 #include "Blaster/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "BlasterAnimInstance.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -37,6 +38,7 @@ ABlasterCharacter::ABlasterCharacter()
 
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
+
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
@@ -77,6 +79,10 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCo
 	// Aiming
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ABlasterCharacter::AimButtonPressed);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ABlasterCharacter::AimButtonReleased);
+
+	//Firing
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ABlasterCharacter::FireButtonPressed);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ABlasterCharacter::FireButtonReleased);
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
@@ -84,6 +90,22 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+}
+
+void ABlasterCharacter::PlayFireMontage(bool bAiming)
+{
+	if (Combat && Combat->EquippedWeapon)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+		if (AnimInstance && FireWeaponMontage)
+		{
+			AnimInstance->Montage_Play(FireWeaponMontage);
+			FName SectionName;
+			SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+			AnimInstance->Montage_JumpToSection(SectionName);
+		}
+	}
 }
 
 // Called every frame
@@ -149,6 +171,22 @@ void ABlasterCharacter::Jump()
 	else
 	{
 		Super::Jump();
+	}
+}
+
+void ABlasterCharacter::FireButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(true);
+	}
+}
+
+void ABlasterCharacter::FireButtonReleased()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(false);
 	}
 }
 

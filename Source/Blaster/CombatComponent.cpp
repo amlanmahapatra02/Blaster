@@ -7,13 +7,15 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
 }
@@ -56,12 +58,80 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
+void UCombatComponent::FireButtonPressed(bool bPressed)
+{
+	bFireButtonPressed = bPressed;
+
+	if (bFireButtonPressed)
+	{
+		ServerFire();
+	}
+}
+
+void UCombatComponent::ServerFire_Implementation()
+{
+	MulitcastFire();
+}
+
+void UCombatComponent::MulitcastFire_Implementation()
+{
+	if (Character && EquippedWeapon)
+	{
+		Character->PlayFireMontage(bAiming);
+		EquippedWeapon->Fire();
+	}
+}
+
+void UCombatComponent::TraceUnderCrosshair(FHitResult& TraceHitResult)
+{
+	FVector2D ViewportSize;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	FVector2D CrosshairLocation = { ViewportSize.X / 2.0f, ViewportSize.Y / 2.0f };
+
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld
+						 (
+							UGameplayStatics::GetPlayerController(this, 0),
+							CrosshairLocation,
+							CrosshairWorldPosition,
+							CrosshairWorldDirection
+						);
+
+	if (bScreenToWorld)
+	{
+		//Line Trace Start and End points
+		FVector Start = CrosshairWorldPosition;
+		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
+
+		//Performing LineTrace
+		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+
+		/* if we don't hit anything within 80000.f,
+		we just set the end point to Location in world space of the actual contact of the trace shape */
+		if (!TraceHitResult.bBlockingHit)
+		{
+			TraceHitResult.ImpactPoint = End;
+		}
+		else
+		{
+			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint, 12.0f, 12, FColor::Red);
+		}
+	}
+}
+
 // Called every frame
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
+	
+	FHitResult HitResult;
+	TraceUnderCrosshair(HitResult);
 }
 
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
