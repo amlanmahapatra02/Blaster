@@ -38,7 +38,7 @@ public:
 
 	void SetWeaponState(EWeaponState State);
 
-	void Fire();
+	virtual void Fire(const FVector& HitTarget);
 
 private:
 
@@ -56,6 +56,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class UAnimationAsset* FireAnimation;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ABulletCasing> BulletCasingClass;
 
 	UFUNCTION()
 	void OnRep_WeaponState();

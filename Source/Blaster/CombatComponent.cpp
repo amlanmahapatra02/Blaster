@@ -29,6 +29,13 @@ void UCombatComponent::BeginPlay()
 	
 }
 
+// Called every frame
+void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+}
+
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	bAiming = bIsAiming;
@@ -64,21 +71,23 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 
 	if (bFireButtonPressed)
 	{
-		ServerFire();
+		FHitResult HitResult;
+		TraceUnderCrosshair(HitResult);
+		ServerFire(HitResult.ImpactPoint);
 	}
 }
 
-void UCombatComponent::ServerFire_Implementation()
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
-	MulitcastFire();
+	MulitcastFire(TraceHitTarget);
 }
 
-void UCombatComponent::MulitcastFire_Implementation()
+void UCombatComponent::MulitcastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (Character && EquippedWeapon)
 	{
 		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire();
+		EquippedWeapon->Fire(TraceHitTarget);
 	}
 }
 
@@ -111,27 +120,7 @@ void UCombatComponent::TraceUnderCrosshair(FHitResult& TraceHitResult)
 
 		//Performing LineTrace
 		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECollisionChannel::ECC_Visibility);
-
-		/* if we don't hit anything within 80000.f,
-		we just set the end point to Location in world space of the actual contact of the trace shape */
-		if (!TraceHitResult.bBlockingHit)
-		{
-			TraceHitResult.ImpactPoint = End;
-		}
-		else
-		{
-			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint, 12.0f, 12, FColor::Red);
-		}
 	}
-}
-
-// Called every frame
-void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
-	FHitResult HitResult;
-	TraceUnderCrosshair(HitResult);
 }
 
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

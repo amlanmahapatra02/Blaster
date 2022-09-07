@@ -7,6 +7,8 @@
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Net/UnrealNetwork.h"
 #include "Animation/AnimationAsset.h"
+#include "BulletCasing.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -105,11 +107,36 @@ void AWeapon::SetWeaponState(EWeaponState State)
 	}
 }
 
-void AWeapon::Fire()
+void AWeapon::Fire(const FVector& HitTarget)
 {
 	if (FireAnimation)
 	{
 		WeaponMesh->PlayAnimation(FireAnimation, false);
+	}
+
+	if (BulletCasingClass)
+	{
+		const USkeletalMeshSocket* AmmoEjectSocket = WeaponMesh->GetSocketByName(FName("AmmoEject"));
+
+		if (AmmoEjectSocket)
+		{
+			FTransform SocketTransform = AmmoEjectSocket->GetSocketTransform(WeaponMesh);
+
+			//Spawning the Bullet Casing
+			UWorld* World = GetWorld();
+
+			const FVector AmmoEjectLocation = WeaponMesh->GetSocketLocation(FName("AmmoEject"));
+			const FRotator AmmoEjectRotation = WeaponMesh->GetSocketRotation(FName("AmmoEject"));
+
+			if (World)
+			{
+				World->SpawnActor<ABulletCasing>(
+					 BulletCasingClass,
+					 AmmoEjectLocation,
+					 AmmoEjectRotation
+					);
+			}
+		}
 	}
 }
 
