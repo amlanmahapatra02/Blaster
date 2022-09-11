@@ -44,7 +44,7 @@ protected:
 
 	void SetHUDCrosshairs(float DeltaTime);
 
-	void LoadCrosshairTexture();
+	void LoadCrosshairTexture(float DeltaTime);
 
 public:	
 	// Called every frame
@@ -70,5 +70,9 @@ private:
 	float AimWalkSpeed = 430.0f;
 
 	bool bFireButtonPressed;
+
+	//HUD and Crosshairs
+	float CrosshairVelocityFactor;
+	float CrosshairJumpFactor;
 		
 };
