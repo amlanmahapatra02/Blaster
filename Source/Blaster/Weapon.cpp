@@ -126,7 +126,7 @@ void AWeapon::Fire(const FVector& HitTarget)
 			UWorld* World = GetWorld();
 
 			const FVector AmmoEjectLocation = WeaponMesh->GetSocketLocation(FName("AmmoEject"));
-			const FRotator AmmoEjectRotation = WeaponMesh->GetSocketRotation(FName("AmmoEject"));
+			const FRotator AmmoEjectRotation = WeaponMesh->GetSocketRotation(FName("AmmoEject")) * FMath::RandRange(1.8,2.2);
 
 			if (World)
 			{
