@@ -64,12 +64,14 @@ private:
 	bool bAiming;
 
 	UPROPERTY(EditAnywhere)
-	float BaseWalkSpeed = 600.0f;
+	float BaseWalkSpeed;
 
 	UPROPERTY(EditAnywhere)
-	float AimWalkSpeed = 430.0f;
+	float AimWalkSpeed;
 
 	bool bFireButtonPressed;
+
+	FVector HitTarget;
 
 	//HUD and Crosshairs
 	float CrosshairVelocityFactor;

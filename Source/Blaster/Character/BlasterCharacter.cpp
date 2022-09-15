@@ -253,6 +253,15 @@ AWeapon* ABlasterCharacter::GetEquippedWeapon()
 	return nullptr;
 }
 
+FVector ABlasterCharacter::GetHitTarget() const
+{
+	if (Combat)
+	{
+		return Combat->HitTarget;
+	}
+	return FVector();
+}
+
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
 {
 	// for client pawn overlap begin

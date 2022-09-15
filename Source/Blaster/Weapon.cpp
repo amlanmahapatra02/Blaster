@@ -43,7 +43,7 @@ void AWeapon::BeginPlay()
 	{
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereBeginOverlap);
+		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
 		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOverlap);
 	}
 
@@ -66,7 +66,7 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeP
 	DOREPLIFETIME(AWeapon, WeaponState);
 }
 
-void AWeapon::OnSphereBeginOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
+void AWeapon::OnSphereOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	ABlasterCharacter *BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 
@@ -125,15 +125,12 @@ void AWeapon::Fire(const FVector& HitTarget)
 			//Spawning the Bullet Casing
 			UWorld* World = GetWorld();
 
-			const FVector AmmoEjectLocation = WeaponMesh->GetSocketLocation(FName("AmmoEject"));
-			const FRotator AmmoEjectRotation = WeaponMesh->GetSocketRotation(FName("AmmoEject")) * FMath::RandRange(1.8,2.2);
-
 			if (World)
 			{
 				World->SpawnActor<ABulletCasing>(
 					 BulletCasingClass,
-					 AmmoEjectLocation,
-					 AmmoEjectRotation
+					 SocketTransform.GetLocation(),
+					 SocketTransform.GetRotation().Rotator()
 					);
 			}
 		}
