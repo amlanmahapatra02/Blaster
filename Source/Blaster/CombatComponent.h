@@ -74,7 +74,26 @@ private:
 	FVector HitTarget;
 
 	//HUD and Crosshairs
+	float BaseCrosshairSpread = 0.50f;
 	float CrosshairVelocityFactor;
 	float CrosshairJumpFactor;
+	float CrosshairAimFactor;
+	float CrosshairShootingFactor;
+
+	/*Aiming and FOV
+	*/
+
+	//Field of View when not Aiming
+	float DefaultFOV;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float ZoomedFOV = 30.0f;
+
+	float CurrentFOV;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float ZoomInterpSpeed = 20.0f;
+
+	void InterpFOV(float DeltaTime);
 		
 };

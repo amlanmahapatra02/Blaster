@@ -11,6 +11,7 @@
 #include "DrawDebugHelpers.h"
 #include "BlasterPlayerController.h"
 #include "BlasterHUD.h"
+#include "Camera/CameraComponent.h"
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
@@ -29,6 +30,16 @@ void UCombatComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
+	if(Character)
+	{
+		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+
+		if(Character->GetFollowCamera())
+		{
+			DefaultFOV = Character->GetFollowCamera()->FieldOfView;
+			CurrentFOV = DefaultFOV;
+		}
+	}
 	
 }
 
@@ -37,13 +48,33 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	SetHUDCrosshairs(DeltaTime);
-
 	if (Character && Character->IsLocallyControlled())
 	{
+		SetHUDCrosshairs(DeltaTime);
 		FHitResult HitResult;
 		TraceUnderCrosshair(HitResult);
 		HitTarget = HitResult.ImpactPoint;
+		InterpFOV(DeltaTime);
+	}
+}
+
+void UCombatComponent::InterpFOV(float DeltaTime)
+{
+	if(EquippedWeapon)
+	{
+		if(bAiming)
+		{
+			CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(), DeltaTime, EquippedWeapon->GetZoomInterpSpeed());
+		}
+		else
+		{
+			CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed);
+		}
+
+		if(Character && Character->GetFollowCamera())
+		{
+			Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
+		}
 	}
 }
 
@@ -85,6 +116,11 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 		FHitResult HitResult;
 		TraceUnderCrosshair(HitResult);
 		ServerFire(HitResult.ImpactPoint);
+	}
+
+	if (EquippedWeapon)
+	{
+		CrosshairShootingFactor = 0.65f;
 	}
 }
 
@@ -193,8 +229,19 @@ void UCombatComponent::LoadCrosshairTexture(float DeltaTime)
 		CrosshairJumpFactor = FMath::FInterpTo(CrosshairJumpFactor, 0.0f, DeltaTime, 35.0f);
 	}
 
-	HUDPackage.CrosshairSpread = CrosshairVelocityFactor + CrosshairJumpFactor;
+	//Aim Factor
+	if (bAiming)
+	{
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.55f, DeltaTime, 30.0f);
+	}
+	else
+	{
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.0f, DeltaTime, 30.0f);
+	}
 
+	CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.0f, DeltaTime, 40.0f);
+
+	HUDPackage.CrosshairSpread = BaseCrosshairSpread + CrosshairVelocityFactor + CrosshairJumpFactor - CrosshairAimFactor + CrosshairShootingFactor;
 	HUD->SetHUDPackage(HUDPackage);
 }
 

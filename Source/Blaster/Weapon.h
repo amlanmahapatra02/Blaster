@@ -63,6 +63,13 @@ private:
 	UFUNCTION()
 	void OnRep_WeaponState();
 
+	//Zoomed FOV while aiming
+	UPROPERTY(EditAnywhere)
+	float ZoomedFOV = 30.0f;
+
+	UPROPERTY(EditAnywhere)
+	float ZoomInterpSpeed = 20.0f;
+
 	UFUNCTION()
 	void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,
 			UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,
@@ -75,6 +82,8 @@ public:
 
 	FORCEINLINE USphereComponent* GetAreaSphere() { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() { return WeaponMesh; }
+	FORCEINLINE float GetZoomedFOV() { return ZoomedFOV; }
+	FORCEINLINE float GetZoomInterpSpeed() { return ZoomInterpSpeed; }
 
 //Weapon Crosshair Textures//
 public:
@@ -93,4 +102,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
 	class UTexture2D* CrosshairsBottom;
+
+
+	
 };
