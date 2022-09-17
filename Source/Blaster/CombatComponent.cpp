@@ -2,15 +2,13 @@
 
 
 #include "CombatComponent.h"
-#include "Blaster/Weapon.h"
-#include "Blaster/Character/BlasterCharacter.h"
+#include "Weapon.h"
+#include "Character/BlasterCharacter.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "DrawDebugHelpers.h"
 #include "BlasterPlayerController.h"
-#include "BlasterHUD.h"
 #include "Camera/CameraComponent.h"
 
 // Sets default values for this component's properties
@@ -163,10 +161,27 @@ void UCombatComponent::TraceUnderCrosshair(FHitResult& TraceHitResult)
 	{
 		//Line Trace Start and End points
 		FVector Start = CrosshairWorldPosition;
+
+		if(Character)
+		{
+			float DistancesToCharacter = (Character->GetActorLocation() - Start).Size();
+			Start += CrosshairWorldDirection * (DistancesToCharacter + 100.0f);
+		}
+
 		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
 
 		//Performing LineTrace
 		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+
+		//Checking if the line trace hits an character to change the crosshair hud to red
+		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>())
+		{
+			HUDPackage.CrosshairsColor = FLinearColor::Red;
+		}
+		else
+		{
+			HUDPackage.CrosshairsColor = FLinearColor::White;
+		}
 	}
 }
 
@@ -190,7 +205,6 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 
 void UCombatComponent::LoadCrosshairTexture(float DeltaTime)
 {
-	FHUDPackage HUDPackage;
 
 	if (EquippedWeapon)
 	{

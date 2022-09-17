@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Blaster/BlasterType/TurningInPlace.h"
+#include "Blaster/InteractWithCrosshairsInterface.h"
 #include "BlasterCharacter.generated.h"
 
 UCLASS()
-class BLASTER_API ABlasterCharacter : public ACharacter
+class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
 
@@ -45,6 +46,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const override;
 
 	void PlayFireMontage(bool bAiming);
+	void PlayHitReactMontage();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -73,6 +75,9 @@ private:
 	float InterpSpeed = 3.5f;
 	float AO_Pitch;
 	
+	UPROPERTY(EditAnywhere)
+	float CameraThreshold = 200.0f;
+
 	FRotator StartingAimRotation;
 	
 	ETurningInPlace TurningInPlace;
@@ -80,6 +85,11 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage* HitReactMontage;
+
+	void HideCameraIfCharacterClose();
 
 public:
 	void SetOverlappingWeapon(AWeapon *Weapon);

@@ -43,6 +43,7 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	GetCharacterMovement()->RotationRate = FRotator{ 0.f, 0.f, 850.f };
 
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
@@ -108,11 +109,52 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 	}
 }
 
+void ABlasterCharacter::PlayHitReactMontage()
+{
+	if (Combat && Combat->EquippedWeapon)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && HitReactMontage)
+		{
+			AnimInstance->Montage_Play(HitReactMontage);
+			FName SectionName = "FromFront";
+			AnimInstance->Montage_JumpToSection(SectionName);
+		}
+	}
+}
+
 // Called every frame
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	AimOffset(DeltaTime);
+	HideCameraIfCharacterClose();
+}
+
+void ABlasterCharacter::HideCameraIfCharacterClose()
+{
+	if (IsLocallyControlled())
+	{
+		FVector CameraThresholdVector = FollowCamera->GetComponentLocation() - GetActorLocation();
+		if (CameraThresholdVector.Size() < CameraThreshold)
+		{
+			GetMesh()->SetVisibility(false);
+			
+			if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+			{
+				Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+			}
+		}
+		else
+		{
+			GetMesh()->SetVisibility(true);
+
+			if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+			{
+				Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+			}
+		}
+	}
 }
 
 void ABlasterCharacter::AimOffset(float DeltaTime)
