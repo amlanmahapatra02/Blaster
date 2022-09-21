@@ -6,6 +6,12 @@
 #include "GameFramework/Actor.h"
 #include "Projectile.generated.h"
 
+class UBoxComponent;
+class UProjectileMovementComponent;
+class UParticleSystemComponent;
+class UParticleSystem;
+class USoundCue;
+
 UCLASS()
 class BLASTER_API AProjectile : public AActor
 {
@@ -31,20 +37,20 @@ public:
 private:
 
 	UPROPERTY(EditAnywhere)
-	class UBoxComponent* CollisionBox;
+	UBoxComponent* CollisionBox;
 
 	UPROPERTY(VisibleAnywhere)
-	class UProjectileMovementComponent* ProjectileMovementComponent;
+	UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(EditAnywhere)
-	class UParticleSystem* Tracer;
+	UParticleSystem* Tracer;
 
-	class UParticleSystemComponent* TracerComponent;
-
-	UPROPERTY(EditAnywhere)
-	class UParticleSystem* ImpactParticle;
+	UParticleSystemComponent* TracerComponent;
 
 	UPROPERTY(EditAnywhere)
-	class USoundCue* ImpactSound;
+	UParticleSystem* ImpactParticle;
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* ImpactSound;
 
 };

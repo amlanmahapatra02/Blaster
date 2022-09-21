@@ -8,6 +8,9 @@
 #include "CombatComponent.generated.h"
 
 #define  TRACE_LENGTH 800000.0f
+class ABlasterCharacter;
+class ABlasterPlayerController;
+class ABlasterHUD;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BLASTER_API UCombatComponent : public UActorComponent
@@ -17,7 +20,7 @@ class BLASTER_API UCombatComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UCombatComponent();
-	friend class ABlasterCharacter;
+	friend ABlasterCharacter;
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 
@@ -38,6 +41,8 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerFire(const FVector_NetQuantize& TraceHitTarget);
 
+	void Fire();
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MulitcastFire(const FVector_NetQuantize& TraceHitTarget);
 
@@ -54,9 +59,9 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
-	class ABlasterCharacter* Character;
-	class ABlasterPlayerController* Controller;
-	class ABlasterHUD* HUD;
+	ABlasterCharacter* Character;
+	ABlasterPlayerController* Controller;
+	ABlasterHUD* HUD;
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
@@ -82,6 +87,8 @@ private:
 	float CrosshairJumpFactor;
 	float CrosshairAimFactor;
 	float CrosshairShootingFactor;
+	float CrosshairPlayerFactor;
+	bool PlayerDeteched;
 
 	/*Aiming and FOV
 	*/
@@ -99,4 +106,13 @@ private:
 
 	void InterpFOV(float DeltaTime);
 		
+	/*
+	//Automatic Fire
+	*/
+	FTimerHandle FireTimer;
+
+	void StartFireTimer();
+	void FireTimerFinish();
+
+	bool bCanFire = true;
 };

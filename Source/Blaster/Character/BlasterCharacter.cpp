@@ -11,6 +11,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "BlasterAnimInstance.h"
+#include "Blaster/Blaster.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -42,6 +43,7 @@ ABlasterCharacter::ABlasterCharacter()
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	GetCharacterMovement()->RotationRate = FRotator{ 0.f, 0.f, 850.f };
@@ -109,6 +111,28 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 	}
 }
 
+// Called every frame
+void ABlasterCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
+	{
+		AimOffset(DeltaTime);
+	}
+	else
+	{
+		TimeSinceLastMovementReplication += DeltaTime;
+		if (TimeSinceLastMovementReplication > 0.25f)
+		{
+			OnRep_ReplicatedMovement();
+		}
+		CalculateAO_Pitch();
+	}
+	HideCameraIfCharacterClose();
+}
+
+
 void ABlasterCharacter::PlayHitReactMontage()
 {
 	if (Combat && Combat->EquippedWeapon)
@@ -123,12 +147,16 @@ void ABlasterCharacter::PlayHitReactMontage()
 	}
 }
 
-// Called every frame
-void ABlasterCharacter::Tick(float DeltaTime)
+void ABlasterCharacter::MultiCastHit_Implementation()
 {
-	Super::Tick(DeltaTime);
-	AimOffset(DeltaTime);
-	HideCameraIfCharacterClose();
+	PlayHitReactMontage();
+}
+
+void ABlasterCharacter::OnRep_ReplicatedMovement()
+{
+	Super::OnRep_ReplicatedMovement();
+	SimProxiesTurn();
+	TimeSinceLastMovementReplication = 0.0f;
 }
 
 void ABlasterCharacter::HideCameraIfCharacterClose()
@@ -163,15 +191,12 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	{
 		return;
 	}
-
-	FVector Velocity = GetVelocity();
-	Velocity.Z = 0.0f;
-	float Speed = Velocity.Size();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
-
+	float Speed = CalculateSpeed();
 	// Standing still, not jumping
 	if (Speed == 0.0f && !bIsInAir)
 	{
+		bRotateRootBone = true;
 		FRotator CurrentAimRotation = FRotator(0.0f, GetBaseAimRotation().Yaw, 0.0f);
 		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
 		AO_Yaw = DeltaAimRotation.Yaw;
@@ -187,21 +212,73 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	// Running or Jumping
 	if (Speed > 0.0f || bIsInAir)
 	{
+		bRotateRootBone = false;
 		StartingAimRotation = FRotator(0.0f, GetBaseAimRotation().Yaw, 0.0f);
 		AO_Yaw = 0.0f;
 		bUseControllerRotationYaw = true;
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 
-	AO_Pitch = GetBaseAimRotation().Pitch;
+	CalculateAO_Pitch();
+}
 
-	if(AO_Pitch > 90.0f && !IsLocallyControlled())
+void ABlasterCharacter::CalculateAO_Pitch()
+{
+	AO_Pitch = GetBaseAimRotation().Pitch;
+	if (AO_Pitch > 90.0f && !IsLocallyControlled())
 	{
 		//map pitch from [270,360) to [-90,0)
 		FVector2D InRange(270.f, 360.f);
 		FVector2D OutRange(-90.f, 0.f);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
 	}
+}
+
+void ABlasterCharacter::SimProxiesTurn()
+{
+	if (Combat && Combat->EquippedWeapon)
+	{
+		float Speed = CalculateSpeed();
+		bRotateRootBone = false;
+
+		if (Speed > 0.0f)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+			return;
+		}
+
+		ProxyRotationLastFrame = ProxyRotation;
+		ProxyRotation = GetActorRotation();
+		ProxyYaw = UKismetMathLibrary::NormalizedDeltaRotator(ProxyRotation, ProxyRotationLastFrame).Yaw;
+
+		UE_LOG(LogTemp, Warning, TEXT("ProxyYaw: %f"), ProxyYaw);
+
+		if (FMath::Abs(ProxyYaw) > TurnThreshold)
+		{
+			if (ProxyYaw > TurnThreshold)
+			{
+				TurningInPlace = ETurningInPlace::ETIP_Right;
+			}
+			else if (ProxyYaw < -TurnThreshold)
+			{
+				TurningInPlace = ETurningInPlace::ETIP_Left;
+			}
+			else
+			{
+				TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+			}
+			return ;
+		}
+
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+	}
+}
+
+float ABlasterCharacter::CalculateSpeed()
+{
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.0f;
+	return  Velocity.Size();
 }
 
 void ABlasterCharacter::Jump()

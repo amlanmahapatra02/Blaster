@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "BulletCasing.generated.h"
 
+class UStaticMeshComponent;
+class USoundCue;
+
 UCLASS()
 class BLASTER_API ABulletCasing : public AActor
 {
@@ -24,13 +27,13 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* CasingMesh;
+	UStaticMeshComponent* CasingMesh;
 
 	UPROPERTY(EditAnywhere)
 	float ShellEjectImpluse;
 
 	UPROPERTY(EditAnywhere)
-	class USoundCue* ShellSound;
+	USoundCue* ShellSound;
 
 	FTimerHandle ShellDestroyTimerHandle;
 

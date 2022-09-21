@@ -6,13 +6,15 @@
 #include "GameFramework/HUD.h"
 #include "BlasterHUD.generated.h"
 
+class UTexture2D;
+
 USTRUCT(BlueprintType)
 struct FHUDPackage
 {
 	GENERATED_BODY()
 
 public:
-	class UTexture2D* CrosshairsCenter;
+	UTexture2D* CrosshairsCenter;
 	UTexture2D* CrosshairsLeft;
 	UTexture2D* CrosshairsRight;
 	UTexture2D* CrosshairsTop;

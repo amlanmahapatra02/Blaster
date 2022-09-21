@@ -8,6 +8,14 @@
 #include "Blaster/InteractWithCrosshairsInterface.h"
 #include "BlasterCharacter.generated.h"
 
+class USpringArmComponent;
+class UCameraComponent;
+class UAnimMontage;
+class UCombatComponent;
+class UWidgetComponent;
+class AWeapon;
+
+
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
@@ -29,12 +37,17 @@ protected:
 	void Lookup(float Value);
 	void EquipButtonPressed();
 	void CrouchButtonPressed();
+
 	void AimButtonPressed();
 	void AimButtonReleased();
 	void AimOffset(float DeltaTime);
+	void CalculateAO_Pitch();
+	void SimProxiesTurn();
 	virtual void Jump() override;
+
 	void FireButtonPressed();
 	void FireButtonReleased();
+	void PlayHitReactMontage();
 
 public:
 	// Called every frame
@@ -46,20 +59,24 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const override;
 
 	void PlayFireMontage(bool bAiming);
-	void PlayHitReactMontage();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MultiCastHit();
+
+	virtual void OnRep_ReplicatedMovement() override;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
-	class USpringArmComponent *CameraBoom;
+	USpringArmComponent *CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
-	class UCameraComponent *FollowCamera;
+	UCameraComponent *FollowCamera;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UWidgetComponent *OverheadWidget;
+	UWidgetComponent *OverheadWidget;
 
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
-	class AWeapon *OverlappingWeapon;
+	AWeapon *OverlappingWeapon;
 
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon *LastWeapon);
@@ -68,7 +85,7 @@ private:
 	void ServerEquipButtonPressed();
 
 	UPROPERTY(VisibleAnywhere)
-	class UCombatComponent *Combat;
+	UCombatComponent *Combat;
 
 	float AO_Yaw;
 	float InterpAO_Yaw;
@@ -78,16 +95,25 @@ private:
 	UPROPERTY(EditAnywhere)
 	float CameraThreshold = 200.0f;
 
+	bool bRotateRootBone;
+	float TurnThreshold = 0.23f;
+	float ProxyYaw;
+	float TimeSinceLastMovementReplication;
+	float CalculateSpeed();
+
+	FRotator ProxyRotationLastFrame;
+	FRotator ProxyRotation;
+
 	FRotator StartingAimRotation;
 	
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	class UAnimMontage* FireWeaponMontage;
+	UAnimMontage* FireWeaponMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	class UAnimMontage* HitReactMontage;
+	UAnimMontage* HitReactMontage;
 
 	void HideCameraIfCharacterClose();
 
@@ -101,4 +127,5 @@ public:
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return  TurningInPlace; }
 	FVector GetHitTarget() const;
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; };
+	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 };

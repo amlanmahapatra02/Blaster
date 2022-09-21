@@ -6,6 +6,13 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
+class UTexture2D;
+class ABulletCasing;
+class UAnimationAsset;
+class UWidgetComponent;
+class USkeletalMeshComponent;
+class USphereComponent;
+
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
 {
@@ -23,6 +30,15 @@ class BLASTER_API AWeapon : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AWeapon();
+
+	/*
+	//Automatic Fire
+	*/
+	UPROPERTY(EditAnywhere, Category = Combact)
+	float FireDelay = 0.15;
+
+	UPROPERTY(EditAnywhere, Category = Combact)
+	bool bAutomatic = true;
 
 protected:
 	// Called when the game starts or when spawned
@@ -43,22 +59,22 @@ public:
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	class USkeletalMeshComponent* WeaponMesh;
+	USkeletalMeshComponent* WeaponMesh;
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	class USphereComponent* AreaSphere;
+	USphereComponent* AreaSphere;
 
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
 	EWeaponState WeaponState;
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	class UWidgetComponent* PickupWidget;
+	UWidgetComponent* PickupWidget;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	class UAnimationAsset* FireAnimation;
+	UAnimationAsset* FireAnimation;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ABulletCasing> BulletCasingClass;
+	TSubclassOf<ABulletCasing> BulletCasingClass;
 
 	UFUNCTION()
 	void OnRep_WeaponState();
@@ -89,19 +105,19 @@ public:
 public:
 
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
-	class UTexture2D* CrosshairsCentre;
+	UTexture2D* CrosshairsCentre;
 
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
-	class UTexture2D* CrosshairsLeft;
+	UTexture2D* CrosshairsLeft;
 
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
-	class UTexture2D* CrosshairsRight;
+	UTexture2D* CrosshairsRight;
 
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
-	class UTexture2D* CrosshairsTop;
+	UTexture2D* CrosshairsTop;
 
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
-	class UTexture2D* CrosshairsBottom;
+	UTexture2D* CrosshairsBottom;
 
 
 	

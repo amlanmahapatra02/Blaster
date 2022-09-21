@@ -9,6 +9,9 @@
 /**
  * 
  */
+
+class UTextBlock;
+
 UCLASS()
 class BLASTER_API UOverHeadWidget : public UUserWidget
 {
@@ -16,10 +19,10 @@ class BLASTER_API UOverHeadWidget : public UUserWidget
 	
 public:
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* DisplayText;
+	UTextBlock* DisplayText;
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* DisplayerUser;
+	UTextBlock* DisplayerUser;
 
 	void SetDisplayText(FString TextToDisplay, FString DisplayUserText);
 
