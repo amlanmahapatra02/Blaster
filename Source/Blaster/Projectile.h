@@ -34,6 +34,9 @@ public:
 
 	virtual void Destroyed() override;
 
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
+
 private:
 
 	UPROPERTY(EditAnywhere)
@@ -51,6 +54,6 @@ private:
 	UParticleSystem* ImpactParticle;
 
 	UPROPERTY(EditAnywhere)
-	USoundCue* ImpactSound;
+	USoundCue* ImpactSound;	
 
 };

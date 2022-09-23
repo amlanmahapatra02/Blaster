@@ -14,7 +14,7 @@ class UAnimMontage;
 class UCombatComponent;
 class UWidgetComponent;
 class AWeapon;
-
+class ABlasterPlayerController;
 
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
@@ -30,6 +30,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	void UpdateHealthHUD();
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -49,6 +51,9 @@ protected:
 	void FireButtonReleased();
 	void PlayHitReactMontage();
 
+	UFUNCTION()
+	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -59,9 +64,6 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const override;
 
 	void PlayFireMontage(bool bAiming);
-
-	UFUNCTION(NetMulticast, Unreliable)
-	void MultiCastHit();
 
 	virtual void OnRep_ReplicatedMovement() override;
 
@@ -117,6 +119,20 @@ private:
 
 	void HideCameraIfCharacterClose();
 
+	/*
+	//Player Stats
+	*/
+	UPROPERTY(EditAnywhere, Category = PlayerStats)
+	float MaxHealth = 100.0f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = PlayerStats)
+	float Health = 100.0f;
+
+	UFUNCTION()
+	void OnRep_Health();
+
+	ABlasterPlayerController* BlasterPlayerController;
+
 public:
 	void SetOverlappingWeapon(AWeapon *Weapon);
 	bool IsWeaponEquipped();
@@ -128,4 +144,6 @@ public:
 	FVector GetHitTarget() const;
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; };
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
+
+
 };

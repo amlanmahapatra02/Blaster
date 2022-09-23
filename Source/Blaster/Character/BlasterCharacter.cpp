@@ -12,6 +12,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "BlasterAnimInstance.h"
 #include "Blaster/Blaster.h"
+#include "Blaster/BlasterPlayerController.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -57,6 +58,13 @@ ABlasterCharacter::ABlasterCharacter()
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UpdateHealthHUD();
+
+	if (HasAuthority())
+	{
+		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::TakeDamage);
+	}
 }
 
 // Called to bind functionality to input
@@ -93,6 +101,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+	DOREPLIFETIME(ABlasterCharacter, Health);
 }
 
 void ABlasterCharacter::PlayFireMontage(bool bAiming)
@@ -132,7 +141,6 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	HideCameraIfCharacterClose();
 }
 
-
 void ABlasterCharacter::PlayHitReactMontage()
 {
 	if (Combat && Combat->EquippedWeapon)
@@ -147,8 +155,10 @@ void ABlasterCharacter::PlayHitReactMontage()
 	}
 }
 
-void ABlasterCharacter::MultiCastHit_Implementation()
+void ABlasterCharacter::TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
+	Health = FMath::Clamp(Health - Damage, 0.0f, MaxHealth);
+	UpdateHealthHUD();
 	PlayHitReactMontage();
 }
 
@@ -183,6 +193,21 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 			}
 		}
 	}
+}
+
+void ABlasterCharacter::UpdateHealthHUD()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+}
+
+void ABlasterCharacter::OnRep_Health()
+{
+	UpdateHealthHUD();
+	PlayHitReactMontage();
 }
 
 void ABlasterCharacter::AimOffset(float DeltaTime)
@@ -480,7 +505,7 @@ void ABlasterCharacter::AimButtonReleased()
 	}
 }
 
-// Client Equip button pressed respones
+// Client Equip button pressed response
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 {
 	if (Combat)
