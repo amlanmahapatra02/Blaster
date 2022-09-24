@@ -3,7 +3,7 @@
 
 #include "BlasterHUD.h"
 #include "GameFramework/PlayerController.h"
-#include "Blaster/CharacterOverlay.h"
+#include "Blaster/HUD/CharacterOverlay.h"
 
 void ABlasterHUD::BeginPlay()
 {

@@ -5,14 +5,15 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
-#include "Blaster/Weapon.h"
+#include "Blaster/Weapon/Weapon.h"
 #include "Net/UnrealNetwork.h"
-#include "Blaster/CombatComponent.h"
+#include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "BlasterAnimInstance.h"
 #include "Blaster/Blaster.h"
-#include "Blaster/BlasterPlayerController.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/GameMode/BlasterGameMode.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -120,6 +121,15 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 	}
 }
 
+void ABlasterCharacter::PlayEliminationMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && EliminationMontage)
+	{
+		AnimInstance->Montage_Play(EliminationMontage);
+	}
+}
+
 // Called every frame
 void ABlasterCharacter::Tick(float DeltaTime)
 {
@@ -155,11 +165,22 @@ void ABlasterCharacter::PlayHitReactMontage()
 	}
 }
 
-void ABlasterCharacter::TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+void ABlasterCharacter::TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser)
 {
 	Health = FMath::Clamp(Health - Damage, 0.0f, MaxHealth);
 	UpdateHealthHUD();
 	PlayHitReactMontage();
+
+	if (Health == 0.0f)
+	{
+		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+		if (BlasterGameMode)
+		{
+			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
+			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+		}
+	}
 }
 
 void ABlasterCharacter::OnRep_ReplicatedMovement()
@@ -167,6 +188,14 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 	Super::OnRep_ReplicatedMovement();
 	SimProxiesTurn();
 	TimeSinceLastMovementReplication = 0.0f;
+}
+
+
+
+void ABlasterCharacter::Elimination_Implementation()
+{
+	bEliminated = true;
+	PlayEliminationMontage();
 }
 
 void ABlasterCharacter::HideCameraIfCharacterClose()
@@ -207,7 +236,11 @@ void ABlasterCharacter::UpdateHealthHUD()
 void ABlasterCharacter::OnRep_Health()
 {
 	UpdateHealthHUD();
-	PlayHitReactMontage();
+
+	if (!bEliminated)
+	{
+		PlayHitReactMontage();
+	}
 }
 
 void ABlasterCharacter::AimOffset(float DeltaTime)

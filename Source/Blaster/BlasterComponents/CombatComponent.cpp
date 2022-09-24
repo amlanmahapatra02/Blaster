@@ -2,13 +2,13 @@
 
 
 #include "CombatComponent.h"
-#include "Weapon.h"
-#include "Character/BlasterCharacter.h"
+#include "Blaster/Weapon/Weapon.h"
+#include "Blaster/Character/BlasterCharacter.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "BlasterPlayerController.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
 

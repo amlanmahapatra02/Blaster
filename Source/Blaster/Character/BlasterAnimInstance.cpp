@@ -4,7 +4,7 @@
 #include "BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Blaster/Weapon.h"
+#include "Blaster/Weapon/Weapon.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -37,6 +37,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		bAiming = BlasterCharacter->IsAiming();
 		TurningInPlace = BlasterCharacter->GetTurningInPlace();
 		bRotateRootBone = BlasterCharacter->ShouldRotateRootBone();
+		bEliminated = BlasterCharacter->IsEliminated();
 
 		// Offset Yaw for Strafing (Replicated both on Server and Clients)
 		FRotator AimRotation = BlasterCharacter->GetBaseAimRotation();

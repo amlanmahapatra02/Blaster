@@ -8,7 +8,7 @@
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
-#include "Character/BlasterCharacter.h"
+#include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/Blaster.h"
 
 

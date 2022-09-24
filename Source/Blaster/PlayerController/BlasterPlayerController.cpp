@@ -2,8 +2,8 @@
 
 
 #include "BlasterPlayerController.h"
-#include "Blaster/BlasterHUD.h"
-#include "Blaster/CharacterOverlay.h"
+#include "Blaster/HUD/BlasterHUD.h"
+#include "Blaster/HUD/CharacterOverlay.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 

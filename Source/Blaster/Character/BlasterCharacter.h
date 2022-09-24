@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Blaster/BlasterType/TurningInPlace.h"
-#include "Blaster/InteractWithCrosshairsInterface.h"
+#include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "BlasterCharacter.generated.h"
 
 class USpringArmComponent;
@@ -52,7 +52,7 @@ protected:
 	void PlayHitReactMontage();
 
 	UFUNCTION()
-	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 
 public:
 	// Called every frame
@@ -64,8 +64,12 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const override;
 
 	void PlayFireMontage(bool bAiming);
+	void PlayEliminationMontage();
 
 	virtual void OnRep_ReplicatedMovement() override;
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void Elimination();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -117,6 +121,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* HitReactMontage;
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* EliminationMontage;
+
 	void HideCameraIfCharacterClose();
 
 	/*
@@ -127,6 +134,8 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = PlayerStats)
 	float Health = 100.0f;
+
+	bool bEliminated = false;
 
 	UFUNCTION()
 	void OnRep_Health();
@@ -144,6 +153,6 @@ public:
 	FVector GetHitTarget() const;
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; };
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
-
+	FORCEINLINE bool IsEliminated() const { return bEliminated; }
 
 };
