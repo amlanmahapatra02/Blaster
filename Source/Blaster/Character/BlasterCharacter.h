@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Blaster/BlasterType/TurningInPlace.h"
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
+#include "Components/TimelineComponent.h"
 #include "BlasterCharacter.generated.h"
 
 class USpringArmComponent;
@@ -15,6 +16,7 @@ class UCombatComponent;
 class UWidgetComponent;
 class AWeapon;
 class ABlasterPlayerController;
+
 
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
@@ -67,9 +69,11 @@ public:
 	void PlayEliminationMontage();
 
 	virtual void OnRep_ReplicatedMovement() override;
+
+	void Elimination();
 	
 	UFUNCTION(NetMulticast, Reliable)
-	void Elimination();
+	void MulticastElimination();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -137,10 +141,41 @@ private:
 
 	bool bEliminated = false;
 
+	UPROPERTY(EditDefaultsOnly)
+	float EliminationDelay = 3.0f;
+
+	FTimerHandle EliminationTimer;
+
+	void EliminationFinished();
+
 	UFUNCTION()
 	void OnRep_Health();
 
 	ABlasterPlayerController* BlasterPlayerController;
+
+
+	/*
+	//Dissolve Effect
+	*/
+
+	UPROPERTY(VisibleAnywhere)
+	UTimelineComponent* DissolveTimeLine;
+	FOnTimelineFloat DissolveTrack;
+
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* DissolveCurve;
+
+	UFUNCTION()
+	void UpdateDissolveMaterial(float DissolveValue);
+	void StartDissolve();
+
+	//Dynamic Instances that we can change at Runtime
+	UPROPERTY(VisibleAnywhere, Category = Elimination)
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
+
+	//Material Instances set on the Blueprint, used with the Dynamic Material instance
+	UPROPERTY(EditAnywhere, Category = Elimination)
+	UMaterialInstance* DissolveMaterialInstances;
 
 public:
 	void SetOverlappingWeapon(AWeapon *Weapon);

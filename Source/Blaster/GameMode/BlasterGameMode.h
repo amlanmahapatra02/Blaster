@@ -10,6 +10,8 @@
  * 
  */
 
+class ACharacter;
+class AController;
 class ABlasterCharacter;
 class ABlasterPlayerController;
 
@@ -20,5 +22,5 @@ class BLASTER_API ABlasterGameMode : public AGameMode
 
 public:
 	virtual void PlayerEliminated(ABlasterCharacter* EliminatedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController);
-	
+	virtual void RequestRespawn(ACharacter* EliminatedCharacter, AController* EliminatedCharacterController);
 };
