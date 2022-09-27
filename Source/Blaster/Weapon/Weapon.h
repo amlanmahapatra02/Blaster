@@ -56,6 +56,8 @@ public:
 
 	virtual void Fire(const FVector& HitTarget);
 
+	void DropWeapon();
+
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")

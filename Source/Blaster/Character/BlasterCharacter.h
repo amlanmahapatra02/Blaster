@@ -16,6 +16,9 @@ class UCombatComponent;
 class UWidgetComponent;
 class AWeapon;
 class ABlasterPlayerController;
+class USoundCue;
+class UParticleSystemComponent;
+class UParticleSystem;
 
 
 UCLASS()
@@ -74,6 +77,8 @@ public:
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElimination();
+
+	virtual void Destroyed() override;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -167,7 +172,9 @@ private:
 
 	UFUNCTION()
 	void UpdateDissolveMaterial(float DissolveValue);
+	void CreateDynamicDissolveMaterialInstance();
 	void StartDissolve();
+	void DisableInputAndCollisionOfPlayer();
 
 	//Dynamic Instances that we can change at Runtime
 	UPROPERTY(VisibleAnywhere, Category = Elimination)
@@ -176,6 +183,21 @@ private:
 	//Material Instances set on the Blueprint, used with the Dynamic Material instance
 	UPROPERTY(EditAnywhere, Category = Elimination)
 	UMaterialInstance* DissolveMaterialInstances;
+
+	/*
+	//Elimination Bot
+	*/
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* EliminationBotEffect;
+
+	UPROPERTY(VisibleAnywhere)
+	UParticleSystemComponent* EliminationBotComponent;
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* ElimBotSound;
+
+	void SpawnElimBot();
+
 
 public:
 	void SetOverlappingWeapon(AWeapon *Weapon);

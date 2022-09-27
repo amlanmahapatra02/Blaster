@@ -15,6 +15,9 @@
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "TimerManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
 
 
 // Sets default values
@@ -207,6 +210,11 @@ void ABlasterCharacter::EliminationFinished()
 
 void ABlasterCharacter::Elimination()
 {
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->DropWeapon();
+	}
+
 	MulticastElimination();
 	GetWorldTimerManager().SetTimer(EliminationTimer, this, &ABlasterCharacter::EliminationFinished, EliminationDelay);
 }
@@ -216,14 +224,70 @@ void ABlasterCharacter::MulticastElimination_Implementation()
 	bEliminated = true;
 	PlayEliminationMontage();
 
+	//Start Dissolve Effect (228-233)
 	if (DissolveMaterialInstances)
 	{
-		DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstances, this);
-		GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstance);
-		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
-		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.0f);
+		CreateDynamicDissolveMaterialInstance();
 	}
+
 	StartDissolve();
+	DisableInputAndCollisionOfPlayer();
+	SpawnElimBot();
+}
+
+//Spawn Elimination Bot on server and all client
+void ABlasterCharacter::SpawnElimBot()
+{
+	if (EliminationBotEffect)
+	{
+		FVector ElimBotSpawnPoint = { GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 200.0f };
+		EliminationBotComponent = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			EliminationBotEffect,
+			ElimBotSpawnPoint,
+			GetActorRotation()
+		);
+	}
+
+	if (ElimBotSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(this, ElimBotSound, GetActorLocation());
+	}
+}
+
+//Destroy the ElimBot on Server as well as Client
+void ABlasterCharacter::Destroyed()
+{
+	Super::Destroyed();
+
+	if (EliminationBotComponent)
+	{
+		EliminationBotComponent->DestroyComponent();
+	}
+}
+
+//Using CurveFloat to change Dissolve and Glow parameter of the MaterialInstances
+void ABlasterCharacter::CreateDynamicDissolveMaterialInstance()
+{
+	DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstances, this);
+	GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstance);
+	DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+	DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.0f);
+}
+
+void ABlasterCharacter::DisableInputAndCollisionOfPlayer()
+{
+	//Disable Character Movement
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if (BlasterPlayerController)
+	{
+		DisableInput(BlasterPlayerController);
+	}
+
+	//Disable Collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABlasterCharacter::HideCameraIfCharacterClose()
