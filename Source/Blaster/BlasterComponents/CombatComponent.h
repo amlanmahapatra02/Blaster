@@ -7,7 +7,7 @@
 #include "Blaster/HUD/BlasterHUD.h"
 #include "CombatComponent.generated.h"
 
-#define  TRACE_LENGTH 800000.0f
+#define  TRACE_LENGTH 80000.f
 class ABlasterCharacter;
 class ABlasterPlayerController;
 class ABlasterHUD;

@@ -23,6 +23,14 @@ UCombatComponent::UCombatComponent()
 	AimWalkSpeed = 450.0f;
 }
 
+void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
+	DOREPLIFETIME(UCombatComponent, bAiming);
+}
+
 // Called when the game starts
 void UCombatComponent::BeginPlay()
 {
@@ -331,13 +339,7 @@ void UCombatComponent::LoadCrosshairTexture(float DeltaTime)
 	HUD->SetHUDPackage(HUDPackage);
 }
 
-void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
-	DOREPLIFETIME(UCombatComponent, bAiming);
-}
 
 
 
