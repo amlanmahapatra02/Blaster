@@ -160,6 +160,7 @@ private:
 	UFUNCTION()
 	void OnRep_Health();
 
+	UPROPERTY()
 	ABlasterPlayerController* BlasterPlayerController;
 
 
@@ -202,6 +203,7 @@ private:
 
 	void SpawnElimBot();
 
+	UPROPERTY()
 	ABlasterPlayerState* BlasterPlayerState;
 
 public:

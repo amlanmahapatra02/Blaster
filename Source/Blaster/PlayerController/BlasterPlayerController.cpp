@@ -29,19 +29,19 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 {
 	bool bHUDValid = BlasterHUD &&
-					 BlasterHUD->CharcterOverlay &&
-					 BlasterHUD->CharcterOverlay->HealthBar &&
-					 BlasterHUD->CharcterOverlay->HealthText;
+					 BlasterHUD->CharacterOverlay &&
+					 BlasterHUD->CharacterOverlay->HealthBar &&
+					 BlasterHUD->CharacterOverlay->HealthText;
 
 	if (bHUDValid)
 	{
 		//Health Bar
 		const float HealthPercent = Health / MaxHealth;
-		BlasterHUD->CharcterOverlay->HealthBar->SetPercent(HealthPercent);
+		BlasterHUD->CharacterOverlay->HealthBar->SetPercent(HealthPercent);
 
 		//Health Text
 		FString HealthText = FString::Printf(TEXT("%d/%d"), (int)Health, (int)MaxHealth);
-		BlasterHUD->CharcterOverlay->HealthText->SetText(FText::FromString(HealthText));
+		BlasterHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
 	}
 	else
 	{
@@ -52,13 +52,30 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 void ABlasterPlayerController::SetHUDScore(float Score)
 {
 	bool bHUDValid = BlasterHUD &&
-		BlasterHUD->CharcterOverlay &&
-		BlasterHUD->CharcterOverlay->ScoreAmount;
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->ScoreAmount;
 
 	if(bHUDValid)
 	{
 		FString ScoreText = FString::Printf(TEXT("%d"), (int)Score);
-		BlasterHUD->CharcterOverlay->ScoreAmount->SetText(FText::FromString(ScoreText));
+		BlasterHUD->CharacterOverlay->ScoreAmount->SetText(FText::FromString(ScoreText));
+	}
+	else
+	{
+		BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+	}
+}
+
+void ABlasterPlayerController::SetHUDDeath(int32 DeathsAmount)
+{
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->DeathsAmount;
+
+	if (bHUDValid)
+	{
+		FString DeathText = FString::Printf(TEXT("%d"), DeathsAmount);
+		BlasterHUD->CharacterOverlay->DeathsAmount->SetText(FText::FromString(DeathText));
 	}
 	else
 	{
