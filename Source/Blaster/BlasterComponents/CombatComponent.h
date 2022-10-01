@@ -120,4 +120,6 @@ private:
 	void FireTimerFinish();
 
 	bool bCanFire = true;
+
+	bool CanFire();
 };

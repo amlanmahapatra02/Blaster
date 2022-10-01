@@ -12,6 +12,8 @@ class UAnimationAsset;
 class UWidgetComponent;
 class USkeletalMeshComponent;
 class USphereComponent;
+class ABlasterCharacter;
+class ABlasterPlayerController;
 
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
@@ -50,6 +52,8 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual void OnRep_Owner() override;
+
 	void ShowPickupWidget(bool bShowWidget);
 
 	void SetWeaponState(EWeaponState State);
@@ -57,6 +61,8 @@ public:
 	virtual void Fire(const FVector& HitTarget);
 
 	void DropWeapon();
+
+	void SetHUDAmmo();
 
 private:
 
@@ -77,6 +83,23 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ABulletCasing> BulletCasingClass;
+
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	int32 Ammo;
+
+	UPROPERTY(EditAnywhere)
+	int32 MagCapacity;
+
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	void SpendRound();
+
+	UPROPERTY()
+	ABlasterCharacter* BlasterOwnerCharacter;
+
+	UPROPERTY()
+	ABlasterPlayerController* BlasterOwnerController;
 
 	UFUNCTION()
 	void OnRep_WeaponState();
@@ -102,6 +125,7 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() { return WeaponMesh; }
 	FORCEINLINE float GetZoomedFOV() { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() { return ZoomInterpSpeed; }
+	bool IsEmpty();
 
 //Weapon Crosshair Textures//
 public:

@@ -111,6 +111,7 @@ void UCombatComponent::FireTimerFinish()
 	}
 }
 
+
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	bAiming = bIsAiming;
@@ -134,6 +135,11 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (Character && WeaponToEquip)
 	{
+		if (EquippedWeapon)
+		{
+			EquippedWeapon->DropWeapon();
+		}
+
 		EquippedWeapon = WeaponToEquip;
 		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 
@@ -144,6 +150,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		}
 
 		EquippedWeapon->SetOwner(Character);
+		EquippedWeapon->SetHUDAmmo();
 
 		//Server only player
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -179,7 +186,7 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	
 void UCombatComponent::Fire()
 {
-	if (bCanFire)
+	if (CanFire())
 	{
 		bCanFire = false;
 		ServerFire(HitTarget);
@@ -337,6 +344,18 @@ void UCombatComponent::LoadCrosshairTexture(float DeltaTime)
 
 	HUDPackage.CrosshairSpread = BaseCrosshairSpread + CrosshairVelocityFactor + CrosshairJumpFactor - CrosshairAimFactor + CrosshairShootingFactor - CrosshairPlayerFactor;
 	HUD->SetHUDPackage(HUDPackage);
+}
+
+bool UCombatComponent::CanFire()
+{
+	if (EquippedWeapon)
+	{
+		return !EquippedWeapon->IsEmpty() || !bCanFire;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 
