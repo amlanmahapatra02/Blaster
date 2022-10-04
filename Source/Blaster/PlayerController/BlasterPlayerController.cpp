@@ -99,3 +99,20 @@ void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 		BlasterHUD = Cast<ABlasterHUD>(GetHUD());
 	}
 }
+
+void ABlasterPlayerController::SetHUDWeaponMagAmmo(int32 MagSize)
+{
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->WeaponMagAmount;
+
+	if (bHUDValid)
+	{
+		FString WeaponMagText = FString::Printf(TEXT("%d"), MagSize);
+		BlasterHUD->CharacterOverlay->WeaponMagAmount->SetText(FText::FromString(WeaponMagText));
+	}
+	else
+	{
+		BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+	}
+}

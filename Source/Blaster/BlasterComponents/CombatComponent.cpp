@@ -29,6 +29,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, bAiming);
+	DOREPLIFETIME_CONDITION(UCombatComponent, WeaponMagAmmo, COND_OwnerOnly);
 }
 
 // Called when the game starts
@@ -45,6 +46,11 @@ void UCombatComponent::BeginPlay()
 		{
 			DefaultFOV = Character->GetFollowCamera()->FieldOfView;
 			CurrentFOV = DefaultFOV;
+		}
+
+		if (Character->HasAuthority())
+		{
+			InitializeMagAmmo();
 		}
 	}
 	
@@ -152,9 +158,37 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		EquippedWeapon->SetOwner(Character);
 		EquippedWeapon->SetHUDAmmo();
 
+		if (WeaponMagAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+		{
+			WeaponMagAmmo = WeaponMagAmmoMap[EquippedWeapon->GetWeaponType()];
+		}
+		
+		//for server player only
+		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+		if (Controller)
+		{
+			Controller->SetHUDWeaponMagAmmo(WeaponMagAmmo);
+		}
+
 		//Server only player
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
+	}
+}
+
+void UCombatComponent::Reload()
+{
+	if (WeaponMagAmmo > 0)
+	{
+		ServerReload();
+	}
+}
+
+void UCombatComponent::ServerReload_Implementation()
+{
+	if (Character)
+	{
+		Character->PlayReloadMontage();
 	}
 }
 
@@ -356,6 +390,20 @@ bool UCombatComponent::CanFire()
 	{
 		return false;
 	}
+}
+
+void UCombatComponent::OnRep_WeaponMagAmmo()
+{
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDWeaponMagAmmo(WeaponMagAmmo);
+	}
+}
+
+void UCombatComponent::InitializeMagAmmo()
+{
+	WeaponMagAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARMag);
 }
 
 

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponTypes.h"
 #include "Weapon.generated.h"
 
 class UTexture2D;
@@ -101,6 +102,9 @@ private:
 	UPROPERTY()
 	ABlasterPlayerController* BlasterOwnerController;
 
+	UPROPERTY(EditAnywhere)
+	EWeaponType WeaponType;
+
 	UFUNCTION()
 	void OnRep_WeaponState();
 
@@ -123,8 +127,10 @@ public:
 
 	FORCEINLINE USphereComponent* GetAreaSphere() { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() { return WeaponMesh; }
-	FORCEINLINE float GetZoomedFOV() { return ZoomedFOV; }
-	FORCEINLINE float GetZoomInterpSpeed() { return ZoomInterpSpeed; }
+	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
+	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+
 	bool IsEmpty();
 
 //Weapon Crosshair Textures//

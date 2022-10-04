@@ -19,6 +19,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 
 
 // Sets default values
@@ -98,6 +99,9 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCo
 	// Crouching
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ABlasterCharacter::CrouchButtonPressed);
 
+	//Reloading
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ABlasterCharacter::ReloadButtonPressed);
+
 	// Aiming
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ABlasterCharacter::AimButtonPressed);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ABlasterCharacter::AimButtonReleased);
@@ -126,6 +130,28 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 			AnimInstance->Montage_Play(FireWeaponMontage);
 			FName SectionName;
 			SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+			AnimInstance->Montage_JumpToSection(SectionName);
+		}
+	}
+}
+
+void ABlasterCharacter::PlayReloadMontage()
+{
+	if (Combat && Combat->EquippedWeapon)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && ReloadMontage)
+		{
+			AnimInstance->Montage_Play(ReloadMontage);
+			FName SectionName;
+
+			//Different Reload Animation for Different Weapon Types
+			switch (Combat->EquippedWeapon->GetWeaponType())
+			{
+			case EWeaponType::EWT_AssaultRifle:
+				SectionName = FName("Rifle");
+				break;
+			}
 			AnimInstance->Montage_JumpToSection(SectionName);
 		}
 	}
@@ -650,6 +676,14 @@ void ABlasterCharacter::CrouchButtonPressed()
 	else
 	{
 		Crouch();
+	}
+}
+
+void ABlasterCharacter::ReloadButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->Reload();
 	}
 }
 

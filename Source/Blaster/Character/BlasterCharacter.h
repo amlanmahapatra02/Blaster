@@ -48,7 +48,7 @@ protected:
 	void Lookup(float Value);
 	void EquipButtonPressed();
 	void CrouchButtonPressed();
-
+	void ReloadButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
 	void AimOffset(float DeltaTime);
@@ -73,6 +73,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const override;
 
 	void PlayFireMontage(bool bAiming);
+	void PlayReloadMontage();
 	void PlayEliminationMontage();
 
 	virtual void OnRep_ReplicatedMovement() override;
@@ -128,16 +129,23 @@ private:
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
 
+	void HideCameraIfCharacterClose();
+
+	/*
+	//Animation Montage
+	*/
+
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* ReloadMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* HitReactMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* EliminationMontage;
-
-	void HideCameraIfCharacterClose();
 
 	/*
 	//Player Stats

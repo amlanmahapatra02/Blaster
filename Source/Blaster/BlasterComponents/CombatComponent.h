@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Blaster/HUD/BlasterHUD.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 #include "CombatComponent.generated.h"
 
 #define  TRACE_LENGTH 80000.f
@@ -23,6 +24,7 @@ public:
 	friend ABlasterCharacter;
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
+	void Reload();
 
 protected:
 	// Called when the game starts
@@ -45,6 +47,9 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulitcastFire(const FVector_NetQuantize& TraceHitTarget);
+
+	UFUNCTION(Server, Reliable)
+	void ServerReload();
 
 	void TraceUnderCrosshair(FHitResult& TraceHitResult);
 
@@ -122,4 +127,18 @@ private:
 	bool bCanFire = true;
 
 	bool CanFire();
+
+	//Carried Ammo for the currently Equipped Weapon
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponMagAmmo)
+	int32 WeaponMagAmmo;
+
+	UFUNCTION()
+	void OnRep_WeaponMagAmmo();
+
+	TMap<EWeaponType, int32> WeaponMagAmmoMap;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingARMag = 30;
+
+	void InitializeMagAmmo();
 };

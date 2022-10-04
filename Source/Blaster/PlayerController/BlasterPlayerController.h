@@ -22,6 +22,8 @@ public:
 	void SetHUDScore(float Score);
 	void SetHUDDeath(int32 DeathsAmount);
 	void SetHUDWeaponAmmo(int32 Ammo);
+	void SetHUDWeaponMagAmmo(int32 MagSize);
+
 	virtual void OnPossess(APawn* InPawn) override;
 
 protected:
