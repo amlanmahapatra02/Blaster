@@ -711,3 +711,12 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 		Combat->EquipWeapon(OverlappingWeapon);
 	}
 }
+
+ECombatState ABlasterCharacter::GetCombatState() const
+{
+	if (Combat)
+	{
+		return Combat->CombatState;
+	}
+	return ECombatState::ECS_MAX;
+}

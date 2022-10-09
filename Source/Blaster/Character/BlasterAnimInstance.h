@@ -82,6 +82,9 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bEliminated;
 
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	bool bUseFABRIK;
+
 private:
 	void DrawTwoDebugLineForGunPoint();
 };

@@ -29,6 +29,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, bAiming);
+	DOREPLIFETIME(UCombatComponent, CombatState);
 	DOREPLIFETIME_CONDITION(UCombatComponent, WeaponMagAmmo, COND_OwnerOnly);
 }
 
@@ -176,9 +177,30 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 }
 
+void UCombatComponent::HandleReload()
+{
+	Character->PlayReloadMontage();
+}
+
+int32 UCombatComponent::AmountToReload()
+{
+	if (EquippedWeapon)
+	{
+		int32 RoomInMag = EquippedWeapon->GetMagCapacity() - EquippedWeapon->GetAmmo();
+
+		if (WeaponMagAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+		{
+			int32 AmmountCarried = WeaponMagAmmoMap[EquippedWeapon->GetWeaponType()];
+			int32 least = FMath::Min(RoomInMag, AmmountCarried);
+			return FMath::Clamp(RoomInMag, 0, least);
+		}
+	}
+	return 0;
+}
+
 void UCombatComponent::Reload()
 {
-	if (WeaponMagAmmo > 0)
+	if (WeaponMagAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
 	{
 		ServerReload();
 	}
@@ -186,9 +208,58 @@ void UCombatComponent::Reload()
 
 void UCombatComponent::ServerReload_Implementation()
 {
+	if (Character && EquippedWeapon)
+	{
+		int32 ReloadAmount = AmountToReload();
+		if (WeaponMagAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+		{
+			WeaponMagAmmoMap[EquippedWeapon->GetWeaponType()] -= ReloadAmount;
+			WeaponMagAmmo = WeaponMagAmmoMap[EquippedWeapon->GetWeaponType()];
+		}
+
+		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+		if (Controller)
+		{
+			Controller->SetHUDWeaponMagAmmo(WeaponMagAmmo);
+		}
+
+		EquippedWeapon->AddAmmo(-ReloadAmount);
+
+		CombatState = ECombatState::ECS_Reloading;
+		HandleReload();
+	}
+}
+
+void UCombatComponent::FinishReloading()
+{
 	if (Character)
 	{
-		Character->PlayReloadMontage();
+		if (Character->HasAuthority())
+		{
+			CombatState = ECombatState::ECS_UnOccupied;
+		}
+		
+		if (bFireButtonPressed)
+		{
+			Fire();
+		}
+	}
+}
+
+void UCombatComponent::OnRep_CombatState()
+{
+	switch (CombatState)
+	{;
+	case ECombatState::ECS_Reloading:
+		HandleReload();
+		break;
+
+	case ECombatState::ECS_UnOccupied:
+		if (bFireButtonPressed)
+		{
+			Fire();
+		}
+		break;
 	}
 }
 
@@ -234,12 +305,12 @@ void UCombatComponent::Fire()
 
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
-	MulitcastFire(TraceHitTarget);
+	MulticastFire(TraceHitTarget);
 }
 
-void UCombatComponent::MulitcastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
-	if (Character && EquippedWeapon)
+	if (Character && EquippedWeapon && CombatState == ECombatState::ECS_UnOccupied)
 	{
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
@@ -384,7 +455,7 @@ bool UCombatComponent::CanFire()
 {
 	if (EquippedWeapon)
 	{
-		return !EquippedWeapon->IsEmpty() || !bCanFire;
+		return !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_UnOccupied;
 	}
 	else
 	{
@@ -405,6 +476,8 @@ void UCombatComponent::InitializeMagAmmo()
 {
 	WeaponMagAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARMag);
 }
+
+
 
 
 

@@ -48,21 +48,14 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	virtual void OnRep_Owner() override;
-
 	void ShowPickupWidget(bool bShowWidget);
-
 	void SetWeaponState(EWeaponState State);
-
 	virtual void Fire(const FVector& HitTarget);
-
 	void DropWeapon();
-
+	void AddAmmo(int32 AmmoToAdd);
 	void SetHUDAmmo();
 
 private:
@@ -130,6 +123,8 @@ public:
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+	FORCEINLINE int32 GetAmmo() const { return Ammo; }
+	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 
 	bool IsEmpty();
 
