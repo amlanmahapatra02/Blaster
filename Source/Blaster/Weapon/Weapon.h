@@ -15,6 +15,7 @@ class USkeletalMeshComponent;
 class USphereComponent;
 class ABlasterCharacter;
 class ABlasterPlayerController;
+class USoundCue;
 
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
@@ -42,6 +43,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Combact)
 	bool bAutomatic = true;
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* EquipSound;
 
 protected:
 	// Called when the game starts or when spawned

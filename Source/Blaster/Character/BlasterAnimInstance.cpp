@@ -76,11 +76,14 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 				RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaTime, 30.0f);
 			}
 		}
+
 		bUseFABRIK = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading;
+		bUseAimOffsets = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading;
+		bTransformRightHand = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading;
 	}
 }
 
-//Draw Two Debug line from Muzzle Tip and HitTarget
+/*Draw Two Debug line from Muzzle Tipand HitTarget
 void UBlasterAnimInstance::DrawTwoDebugLineForGunPoint()
 {
 	FTransform MuzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlash"), ERelativeTransformSpace::RTS_World);
@@ -90,4 +93,4 @@ void UBlasterAnimInstance::DrawTwoDebugLineForGunPoint()
 	FVector LineEnd = LineStart + MuzzleX * 1000.0f;
 	DrawDebugLine(GetWorld(), LineStart, LineEnd, FColor::Red);
 	DrawDebugLine(GetWorld(), LineStart, BlasterCharacter->GetHitTarget(), FColor::Orange);
-}
+}*/

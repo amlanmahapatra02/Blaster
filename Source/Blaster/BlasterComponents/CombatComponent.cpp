@@ -11,6 +11,7 @@
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
@@ -115,6 +116,8 @@ void UCombatComponent::FireTimerFinish()
 		{
 			Fire();
 		}
+		//if Empty Auto Reload
+		AutoReload();
 	}
 }
 
@@ -171,9 +174,29 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 			Controller->SetHUDWeaponMagAmmo(WeaponMagAmmo);
 		}
 
+		PlayEquipSound();
+
 		//Server only player
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
+
+		AutoReload();
+	}
+}
+
+void UCombatComponent::PlayEquipSound()
+{
+	if (EquippedWeapon && EquippedWeapon->EquipSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
+	}
+}
+
+void UCombatComponent::AutoReload()
+{
+	if (EquippedWeapon->IsEmpty())
+	{
+		Reload();
 	}
 }
 
@@ -276,6 +299,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		}
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
+		PlayEquipSound();
 	}
 }
 
@@ -349,7 +373,7 @@ void UCombatComponent::TraceUnderCrosshair(FHitResult& TraceHitResult)
 			Start += CrosshairWorldDirection * (DistancesToCharacter + 100.0f);
 		}
 
-		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
+		FVector End = Start + (CrosshairWorldDirection * TRACE_LENGTH);
 
 		//Performing LineTrace
 		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECollisionChannel::ECC_Visibility);

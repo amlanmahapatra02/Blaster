@@ -56,13 +56,11 @@ protected:
 	void ServerReload();
 
 	void HandleReload();
-
+	void AutoReload();
 	int32 AmountToReload();
-
+	void PlayEquipSound();
 	void TraceUnderCrosshair(FHitResult& TraceHitResult);
-
 	void SetHUDCrosshairs(float DeltaTime);
-
 	void LoadCrosshairTexture(float DeltaTime);
 
 public:	
