@@ -37,4 +37,7 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* WeaponMagAmount;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* MatchCountDownText;
 };

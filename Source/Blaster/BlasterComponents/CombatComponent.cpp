@@ -500,11 +500,3 @@ void UCombatComponent::InitializeMagAmmo()
 {
 	WeaponMagAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARMag);
 }
-
-
-
-
-
-
-
-

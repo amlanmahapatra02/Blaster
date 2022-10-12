@@ -116,3 +116,23 @@ void ABlasterPlayerController::SetHUDWeaponMagAmmo(int32 MagSize)
 		BlasterHUD = Cast<ABlasterHUD>(GetHUD());
 	}
 }
+
+void ABlasterPlayerController::SetHUDMatchCountDown(float CountdownTime)
+{
+	bool bHUDValid = BlasterHUD && 
+		BlasterHUD->CharacterOverlay && 
+		BlasterHUD->CharacterOverlay->MatchCountDownText;
+
+	if (bHUDValid)
+	{
+		int32 Minutes = FMath::FloorToInt(CountdownTime / 60.0f);
+		int32 Seconds = CountdownTime - Minutes * 60.0f;
+
+		FString CountDownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
+		BlasterHUD->CharacterOverlay->MatchCountDownText->SetText(FText::FromString(CountDownText));
+	}
+	else
+	{
+		BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+	}
+}

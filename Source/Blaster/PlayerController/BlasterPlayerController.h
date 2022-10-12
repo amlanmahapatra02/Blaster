@@ -23,6 +23,7 @@ public:
 	void SetHUDDeath(int32 DeathsAmount);
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDWeaponMagAmmo(int32 MagSize);
+	void SetHUDMatchCountDown(float CountdownTime);
 
 	virtual void OnPossess(APawn* InPawn) override;
 
@@ -32,5 +33,8 @@ protected:
 private:
 	UPROPERTY()
 	ABlasterHUD* BlasterHUD;
+
+	/*To Remove because matchTime should be held by GameMode Class*/
+	float MatchTime = 120.0f;
 	
 };
