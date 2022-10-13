@@ -6,13 +6,21 @@
 #include "Blaster/HUD/CharacterOverlay.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Engine/World.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Net/UnrealNetwork.h"
 
 void ABlasterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+}
+
+void ABlasterPlayerController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	SetHUDTime();
 }
 
 void ABlasterPlayerController::OnPossess(APawn* InPawn)
@@ -136,3 +144,61 @@ void ABlasterPlayerController::SetHUDMatchCountDown(float CountdownTime)
 		BlasterHUD = Cast<ABlasterHUD>(GetHUD());
 	}
 }
+
+void ABlasterPlayerController::SetHUDTime()
+{
+	uint32 SecondLefts = FMath::CeilToInt(MatchTime - GetServerTime());
+	if (CountdownInt != SecondLefts)
+	{
+		SetHUDMatchCountDown(MatchTime - GetServerTime());
+	}
+	CountdownInt = SecondLefts;
+}
+
+void ABlasterPlayerController::ServerRequestServerTime_Implementation(float TimeOfClientRequest)
+{
+	float ServerTimeOfReceipt = GetWorld()->GetTimeSeconds();
+	ClientReportServerTime(TimeOfClientRequest, ServerTimeOfReceipt);
+}
+
+void ABlasterPlayerController::ClientReportServerTime_Implementation(float TimeOfClientRequest, float TimeofServerRecieveClientRequest)
+{
+	float ClientTime = GetWorld()->GetTimeSeconds();
+	float RoundTripTime = ClientTime - TimeOfClientRequest;
+	float CurrentServerTime = TimeofServerRecieveClientRequest - (0.5f * RoundTripTime);
+	ClientServerDelta = CurrentServerTime - ClientTime;
+}
+
+void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
+{
+	TimeSyncRunningTime += DeltaTime;
+	if (IsLocalController() && TimeSyncRunningTime > TimeSyncFrequency)
+	{
+		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+		TimeSyncRunningTime = 0.0f;
+	}
+} 
+
+float ABlasterPlayerController::GetServerTime()
+{
+	float ServerTime = GetWorld()->GetTimeSeconds();
+	if (HasAuthority())
+	{
+		return ServerTime;
+	}
+	else
+	{
+		return ServerTime + ClientServerDelta;
+	}
+}
+
+void ABlasterPlayerController::ReceivedPlayer()
+{
+	Super::ReceivedPlayer();
+
+	if (IsLocalController())
+	{
+		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+	}
+}
+
