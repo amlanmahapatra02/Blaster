@@ -9,6 +9,7 @@
 #include "Engine/World.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Net/UnrealNetwork.h"
+#include "Blaster/GameMode/BlasterGameMode.h"
 
 void ABlasterPlayerController::BeginPlay()
 {
@@ -17,10 +18,20 @@ void ABlasterPlayerController::BeginPlay()
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
 }
 
+void ABlasterPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ABlasterPlayerController, MatchState);
+}
+
 void ABlasterPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
 	SetHUDTime();
+	CheckTimeSync(DeltaTime);
+	PollInit();
 }
 
 void ABlasterPlayerController::OnPossess(APawn* InPawn)
@@ -54,6 +65,9 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 	else
 	{
 		BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+		bInitializeCharacterOverlay = true;
+		HUDHealth = Health;
+		HUDMaxHealth = MaxHealth;
 	}
 }
 
@@ -71,6 +85,8 @@ void ABlasterPlayerController::SetHUDScore(float Score)
 	else
 	{
 		BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+		bInitializeCharacterOverlay = true;
+		HUDScore = Score;
 	}
 }
 
@@ -88,6 +104,8 @@ void ABlasterPlayerController::SetHUDDeath(int32 DeathsAmount)
 	else
 	{
 		BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+		bInitializeCharacterOverlay = true;
+		HUDDeaths = DeathsAmount;
 	}
 }
 
@@ -145,6 +163,7 @@ void ABlasterPlayerController::SetHUDMatchCountDown(float CountdownTime)
 	}
 }
 
+
 void ABlasterPlayerController::SetHUDTime()
 {
 	uint32 SecondLefts = FMath::CeilToInt(MatchTime - GetServerTime());
@@ -153,6 +172,23 @@ void ABlasterPlayerController::SetHUDTime()
 		SetHUDMatchCountDown(MatchTime - GetServerTime());
 	}
 	CountdownInt = SecondLefts;
+}
+
+void ABlasterPlayerController::PollInit()
+{
+	if (CharacterOverlay == nullptr)
+	{
+		if (BlasterHUD && BlasterHUD->CharacterOverlay)
+		{
+			CharacterOverlay = BlasterHUD->CharacterOverlay;
+			if (CharacterOverlay)
+			{
+				SetHUDHealth(HUDHealth, HUDMaxHealth);
+				SetHUDScore(HUDScore);
+				SetHUDDeath(HUDDeaths);
+			}
+		}
+	}
 }
 
 void ABlasterPlayerController::ServerRequestServerTime_Implementation(float TimeOfClientRequest)
@@ -202,3 +238,28 @@ void ABlasterPlayerController::ReceivedPlayer()
 	}
 }
 
+void ABlasterPlayerController::OnMatchState(FName State)
+{
+	MatchState = State;
+
+	if (MatchState == MatchState::InProgress)
+	{
+		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+		if (BlasterHUD)
+		{
+			BlasterHUD->AddCharacterOverlay();
+		}
+	}
+}
+
+void ABlasterPlayerController::OnRep_MatchState()
+{
+	if (MatchState == MatchState::InProgress)
+	{
+		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+		if (BlasterHUD)
+		{
+			BlasterHUD->AddCharacterOverlay();
+		}
+	}
+}

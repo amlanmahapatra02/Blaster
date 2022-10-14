@@ -25,6 +25,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void PlayerEliminated(ABlasterCharacter* EliminatedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController);
 	virtual void RequestRespawn(ACharacter* EliminatedCharacter, AController* EliminatedCharacterController);
+	virtual void OnMatchStateSet() override;
 
 	UPROPERTY(EditDefaultsOnly)
 	float WarmUpTime = 10.0f;
