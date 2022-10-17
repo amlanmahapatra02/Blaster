@@ -16,7 +16,7 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 		if (World)
 		{
 			bUseSeamlessTravel = true;
-			World->ServerTravel(FString("/Game/Maps/BlasterMap"));
+			World->ServerTravel(FString("/Game/Maps/BlasterMap1"));
 		}
 	}
 }

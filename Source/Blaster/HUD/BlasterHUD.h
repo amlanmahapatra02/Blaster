@@ -9,6 +9,7 @@
 class UTexture2D;
 class UCharacterOverlay;
 class UUserWidget;
+class UAnnouncement;
 
 USTRUCT(BlueprintType)
 struct FHUDPackage
@@ -43,6 +44,15 @@ public:
 	UCharacterOverlay* CharacterOverlay;
 
 	void AddCharacterOverlay();
+
+
+	UPROPERTY(EditAnywhere, Category = Announcement)
+	TSubclassOf<UUserWidget> AnnouncementClass;
+
+	UPROPERTY()
+	UAnnouncement* Announcement;
+
+	void AddAnnouncement();
 
 protected:
 	virtual void BeginPlay() override;

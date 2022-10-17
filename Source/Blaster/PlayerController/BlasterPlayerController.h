@@ -25,8 +25,9 @@ public:
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDWeaponMagAmmo(int32 MagSize);
 	void SetHUDMatchCountDown(float CountdownTime);
-	void OnMatchState(FName State);
+	void SetHUDAnnouncementCountDown(float CountdownTime);
 
+	void OnMatchState(FName State);
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void ReceivedPlayer() override;
@@ -37,6 +38,7 @@ protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
 	void PollInit();
+	void HandleMatchHasStarted();
 
 	/*Sync Time between Client and Server*/
 
@@ -59,12 +61,21 @@ protected:
 
 	void CheckTimeSync(float DeltaTime);
 
+	UFUNCTION(Server, Reliable)
+	void ServerCheckMatchState();
+
+
+	//Client RPC to avoid replicating Warmuptime, MatchTime and StartingTime
+	UFUNCTION(Client, Reliable)
+	void ClientJoinMidGame(FName StateOfMatch, float Warmup, float Match, float StartingTime);
+
 private:
 	UPROPERTY()
 	ABlasterHUD* BlasterHUD;
 
-	/*To Remove because matchTime should be held by GameMode Class*/
-	float MatchTime = 120.0f;
+	float LevelStartingTime = 0.0f;
+	float WarmUpTime = 0.0f;
+	float MatchTime = 0.0f;
 	uint32 CountdownInt = 0;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
