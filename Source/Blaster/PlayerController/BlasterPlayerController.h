@@ -12,6 +12,7 @@
 
 class ABlasterHUD;
 class UCharacterOverlay;
+class ABlasterGameMode;
 
 UCLASS()
 class BLASTER_API ABlasterPlayerController : public APlayerController
@@ -38,7 +39,9 @@ protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
 	void PollInit();
+
 	void HandleMatchHasStarted();
+	void HandleCoolDown();
 
 	/*Sync Time between Client and Server*/
 
@@ -67,7 +70,7 @@ protected:
 
 	//Client RPC to avoid replicating Warmuptime, MatchTime and StartingTime
 	UFUNCTION(Client, Reliable)
-	void ClientJoinMidGame(FName StateOfMatch, float Warmup, float Match, float StartingTime);
+	void ClientJoinMidGame(FName StateOfMatch, float Warmup, float Match, float StartingTime, float CoolDown);
 
 private:
 	UPROPERTY()
@@ -76,7 +79,11 @@ private:
 	float LevelStartingTime = 0.0f;
 	float WarmUpTime = 0.0f;
 	float MatchTime = 0.0f;
+	float CoolDownTime = 0.0f;
 	uint32 CountdownInt = 0;
+
+	UPROPERTY()
+	ABlasterGameMode* BlasterGameMode;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
 	FName MatchState;

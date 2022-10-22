@@ -43,6 +43,7 @@ protected:
 	//Poll for any relevant class and intialize our Hud
 	void PollInit();
 
+	void RotateInPlace(float DeltaTime);
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	void Turn(float Value);
@@ -85,6 +86,9 @@ public:
 	void MulticastElimination();
 
 	virtual void Destroyed() override;
+
+	UPROPERTY(Replicated)
+	bool bDisableGameplay = false;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -229,5 +233,7 @@ public:
 	FORCEINLINE bool IsEliminated() const { return bEliminated; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
+	FORCEINLINE bool GetDisableGamplay() const { return bDisableGameplay; }
 	ECombatState GetCombatState() const;
 };

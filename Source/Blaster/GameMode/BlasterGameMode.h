@@ -10,6 +10,12 @@
  * 
  */
 
+namespace MatchState
+{
+	//Match During has been reached . Display winner and begin cooldown timer
+	extern BLASTER_API const FName CoolDown;
+}
+
 class ACharacter;
 class AController;
 class ABlasterCharacter;
@@ -33,6 +39,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	float MatchTime = 120.0f;
 
+	UPROPERTY(EditDefaultsOnly)
+	float CoolDownTime = 10.0f;
+
 	float LevelStartingTime = 0.0f;
 
 protected:
@@ -41,4 +50,7 @@ protected:
 
 private:
 	float CountDownTime = 0.0f;
+
+public:
+	FORCEINLINE float GetCountDownTime() const { return CountDownTime; }
 };
