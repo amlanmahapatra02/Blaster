@@ -499,4 +499,5 @@ void UCombatComponent::OnRep_WeaponMagAmmo()
 void UCombatComponent::InitializeMagAmmo()
 {
 	WeaponMagAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARMag);
+	WeaponMagAmmoMap.Emplace(EWeaponType::EWT_RocketLaucher, StartingRocketAmmo);
 }
