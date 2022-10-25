@@ -28,6 +28,15 @@ protected:
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalInput, const FHitResult& Hit);
 
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* ImpactParticle;
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* ImpactSound;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* CollisionBox;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -38,10 +47,6 @@ public:
 	float Damage = 20.f;
 
 private:
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* CollisionBox;
-
 	UPROPERTY(VisibleAnywhere)
 	UProjectileMovementComponent* ProjectileMovementComponent;
 
@@ -50,11 +55,4 @@ private:
 
 	UPROPERTY()
 	UParticleSystemComponent* TracerComponent;
-
-	UPROPERTY(EditAnywhere)
-	UParticleSystem* ImpactParticle;
-
-	UPROPERTY(EditAnywhere)
-	USoundCue* ImpactSound;	
-
 };
