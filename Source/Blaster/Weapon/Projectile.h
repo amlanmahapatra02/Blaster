@@ -37,6 +37,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* CollisionBox;
 
+	UPROPERTY(VisibleAnywhere)
+	UProjectileMovementComponent* ProjectileMovementComponent;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -47,8 +50,7 @@ public:
 	float Damage = 20.f;
 
 private:
-	UPROPERTY(VisibleAnywhere)
-	UProjectileMovementComponent* ProjectileMovementComponent;
+	
 
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* Tracer;

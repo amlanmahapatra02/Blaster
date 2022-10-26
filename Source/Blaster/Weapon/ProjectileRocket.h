@@ -15,6 +15,7 @@ class UNiagaraComponent;
 class USoundCue;
 class UAudioComponent;
 class USoundAttenuation;
+class URocketMovementComponent;
 
 UCLASS()
 class BLASTER_API AProjectileRocket : public AProjectile
@@ -44,6 +45,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	USoundAttenuation* LoopingSoundAttenuation;
+
+	UPROPERTY(VisibleAnywhere)
+	URocketMovementComponent* RocketMovementComponent;
 
 private:
 
