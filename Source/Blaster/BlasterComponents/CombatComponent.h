@@ -9,7 +9,7 @@
 #include "Blaster/BlasterType/CombatState.h"
 #include "CombatComponent.generated.h"
 
-#define  TRACE_LENGTH 80000.f
+
 class ABlasterCharacter;
 class ABlasterPlayerController;
 class ABlasterHUD;
@@ -154,6 +154,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	int32 StartingSMGAmmo = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingShotgunAmmo = 0;
 
 	void InitializeMagAmmo();
 
