@@ -501,4 +501,5 @@ void UCombatComponent::InitializeMagAmmo()
 	WeaponMagAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARMag);
 	WeaponMagAmmoMap.Emplace(EWeaponType::EWT_RocketLaucher, StartingRocketAmmo);
 	WeaponMagAmmoMap.Emplace(EWeaponType::EWT_Pistol, StartingPistolAmmo);
+	WeaponMagAmmoMap.Emplace(EWeaponType::EWT_SMG, StartingSMGAmmo);
 }
