@@ -294,6 +294,18 @@ void ABlasterCharacter::MulticastElimination_Implementation()
 	StartDissolve();
 	DisableInputAndCollisionOfPlayer();
 	SpawnElimBot();
+	
+	//Hiding Sniper Widget when the character's die while aiming
+	bool bHideSniperWidget = IsLocallyControlled() &&
+		Combat &&
+		Combat->bAiming &&
+		Combat->EquippedWeapon &&
+		Combat->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle;
+
+	if (bHideSniperWidget)
+	{
+		ShowSniperScopeWidget(false);
+	}
 }
 
 //Spawn Elimination Bot on server and all client
