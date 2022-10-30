@@ -144,7 +144,7 @@ private:
 	TMap<EWeaponType, int32> WeaponMagAmmoMap;
 
 	UPROPERTY(EditAnywhere)
-	int32 StartingARMag = 30;
+	int32 StartingARMag = 0;
 
 	UPROPERTY(EditAnywhere)
 	int32 StartingRocketAmmo = 0;
@@ -157,6 +157,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	int32 StartingShotgunAmmo = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingSniperRifleAmmo = 0;
 
 	void InitializeMagAmmo();
 
