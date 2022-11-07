@@ -6,18 +6,12 @@
 #include "GameFramework/HUD.h"
 #include "BlasterHUD.generated.h"
 
-class UTexture2D;
-class UCharacterOverlay;
-class UUserWidget;
-class UAnnouncement;
-
 USTRUCT(BlueprintType)
 struct FHUDPackage
 {
 	GENERATED_BODY()
-
 public:
-	UTexture2D* CrosshairsCenter;
+	class UTexture2D* CrosshairsCenter;
 	UTexture2D* CrosshairsLeft;
 	UTexture2D* CrosshairsRight;
 	UTexture2D* CrosshairsTop;
@@ -27,30 +21,28 @@ public:
 };
 
 /**
- * 
+ *
  */
 UCLASS()
 class BLASTER_API ABlasterHUD : public AHUD
 {
 	GENERATED_BODY()
-
 public:
 	virtual void DrawHUD() override;
 
-	UPROPERTY(EditAnywhere, Category = PlayerStats)
-	TSubclassOf<UUserWidget> CharacterOverlayClass;
-
-	UPROPERTY()
-	UCharacterOverlay* CharacterOverlay;
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	TSubclassOf<class UUserWidget> CharacterOverlayClass;
 
 	void AddCharacterOverlay();
 
+	UPROPERTY()
+	class UCharacterOverlay* CharacterOverlay;
 
-	UPROPERTY(EditAnywhere, Category = Announcement)
+	UPROPERTY(EditAnywhere, Category = "Announcements")
 	TSubclassOf<UUserWidget> AnnouncementClass;
 
 	UPROPERTY()
-	UAnnouncement* Announcement;
+	class UAnnouncement* Announcement;
 
 	void AddAnnouncement();
 
@@ -58,15 +50,12 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-
 	FHUDPackage HUDPackage;
 
-	void DrawCrosshairs(UTexture2D* Texture, FVector2D ViewPortCenter, FVector2D Spread, FLinearColor CrosshairColor);
+	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, FVector2D Spread, FLinearColor CrosshairColor);
 
 	UPROPERTY(EditAnywhere)
-	float CrosshairSpreadMax = 16.0f;
-
+	float CrosshairSpreadMax = 16.f;
 public:
-	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; };
-	
+	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
 };

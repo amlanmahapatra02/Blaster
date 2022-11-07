@@ -10,16 +10,13 @@ void ABlasterPlayerState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ABlasterPlayerState, Deaths);
+	DOREPLIFETIME(ABlasterPlayerState, Defeats);
 }
 
-//Replicated Score variable from APlayerState class
-void ABlasterPlayerState::OnRep_Score()
+void ABlasterPlayerState::AddToScore(float ScoreAmount)
 {
-	Super::OnRep_Score();
-
+	SetScore(GetScore() + ScoreAmount);
 	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
-
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
@@ -30,46 +27,44 @@ void ABlasterPlayerState::OnRep_Score()
 	}
 }
 
-//Called Only on Server
-void ABlasterPlayerState::AddToScore(float ScoreAmount)
+void ABlasterPlayerState::OnRep_Score()
 {
-	SetScore(GetScore() + ScoreAmount);
-	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
+	Super::OnRep_Score();
 
+	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-			Controller->SetHUDScore(Score);
+			Controller->SetHUDScore(GetScore());
 		}
 	}
 }
 
-//Replicating Deaths Variable  
-void ABlasterPlayerState::OnRep_Death()
+void ABlasterPlayerState::AddToDefeats(int32 DefeatsAmount)
 {
+	Defeats += DefeatsAmount;
 	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-			Controller->SetHUDDeath(Deaths);
+			Controller->SetHUDDefeats(Defeats);
 		}
 	}
 }
 
-void ABlasterPlayerState::AddToDeath(int32 DeathsAmount)
+void ABlasterPlayerState::OnRep_Defeats()
 {
-	Deaths += DeathsAmount;
 	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-			Controller->SetHUDDeath(Deaths);
+			Controller->SetHUDDefeats(Defeats);
 		}
 	}
 }

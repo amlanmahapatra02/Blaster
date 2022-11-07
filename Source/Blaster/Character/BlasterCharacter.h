@@ -10,80 +10,24 @@
 #include "Blaster/BlasterType/CombatState.h"
 #include "BlasterCharacter.generated.h"
 
-class USpringArmComponent;
-class UCameraComponent;
-class UAnimMontage;
-class UCombatComponent;
-class UWidgetComponent;
-class AWeapon;
-class ABlasterPlayerController;
-class USoundCue;
-class UParticleSystemComponent;
-class UParticleSystem;
-class ABlasterPlayerState;
-
-
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	ABlasterCharacter();
-
-	virtual void PostInitializeComponents() override;
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	void UpdateHealthHUD();
-
-	//Poll for any relevant class and intialize our Hud
-	void PollInit();
-
-	void RotateInPlace(float DeltaTime);
-	void MoveForward(float Value);
-	void MoveRight(float Value);
-	void Turn(float Value);
-	void Lookup(float Value);
-	void EquipButtonPressed();
-	void CrouchButtonPressed();
-	void ReloadButtonPressed();
-	void AimButtonPressed();
-	void AimButtonReleased();
-	void AimOffset(float DeltaTime);
-	void CalculateAO_Pitch();
-	void SimProxiesTurn();
-	virtual void Jump() override;
-
-	void FireButtonPressed();
-	void FireButtonReleased();
-	void PlayHitReactMontage();
-
-	UFUNCTION()
-	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
-
-public:
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
-
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const override;
-
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
 	void PlayReloadMontage();
-	void PlayEliminationMontage();
-
+	void PlayElimMontage();
 	virtual void OnRep_ReplicatedMovement() override;
-
-	void Elimination();
-	
+	void Elim();
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastElimination();
+	void MulticastElim();
 
 	virtual void Destroyed() override;
 
@@ -93,58 +37,68 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool bShowScope);
 
-private:
-	UPROPERTY(VisibleAnywhere, Category = Camera)
-	USpringArmComponent *CameraBoom;
+protected:
+	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere, Category = Camera)
-	UCameraComponent *FollowCamera;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UWidgetComponent *OverheadWidget;
-
-	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
-	AWeapon *OverlappingWeapon;
+	void MoveForward(float Value);
+	void MoveRight(float Value);
+	void Turn(float Value);
+	void LookUp(float Value);
+	void EquipButtonPressed();
+	void CrouchButtonPressed();
+	void ReloadButtonPressed();
+	void AimButtonPressed();
+	void AimButtonReleased();
+	void AimOffset(float DeltaTime);
+	void CalculateAO_Pitch();
+	void SimProxiesTurn();
+	virtual void Jump() override;
+	void FireButtonPressed();
+	void FireButtonReleased();
+	void PlayHitReactMontage();
 
 	UFUNCTION()
-	void OnRep_OverlappingWeapon(AWeapon *LastWeapon);
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+	void UpdateHUDHealth();
+	// Poll for any relelvant classes and initialize our HUD
+	void PollInit();
+	void RotateInPlace(float DeltaTime);
+private:
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	class USpringArmComponent* CameraBoom;
+
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	class UCameraComponent* FollowCamera;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* OverheadWidget;
+
+	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
+	class AWeapon* OverlappingWeapon;
+
+	UFUNCTION()
+	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UCombatComponent* Combat;
 
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UCombatComponent *Combat;
-
 	float AO_Yaw;
 	float InterpAO_Yaw;
-	float InterpSpeed = 3.5f;
 	float AO_Pitch;
-	
-	UPROPERTY(EditAnywhere)
-	float CameraThreshold = 200.0f;
-
-	bool bRotateRootBone;
-	float TurnThreshold = 0.23f;
-	float ProxyYaw;
-	float TimeSinceLastMovementReplication;
-	float CalculateSpeed();
-
-	FRotator ProxyRotationLastFrame;
-	FRotator ProxyRotation;
-
 	FRotator StartingAimRotation;
-	
+
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
 
-	void HideCameraIfCharacterClose();
-
-	/*
-	//Animation Montage
+	/**
+	* Animation montages
 	*/
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	UAnimMontage* FireWeaponMontage;
+	class UAnimMontage* FireWeaponMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* ReloadMontage;
@@ -153,39 +107,52 @@ private:
 	UAnimMontage* HitReactMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	UAnimMontage* EliminationMontage;
+	UAnimMontage* ElimationMontage;
 
-	/*
-	//Player Stats
+	void HideCameraIfCharacterClose();
+
+	UPROPERTY(EditAnywhere)
+	float CameraThreshold = 200.f;
+
+	bool bRotateRootBone;
+	float TurnThreshold = 0.5f;
+	FRotator ProxyRotationLastFrame;
+	FRotator ProxyRotation;
+	float ProxyYaw;
+	float TimeSinceLastMovementReplication;
+	float CalculateSpeed();
+
+	/**
+	* Player health
 	*/
-	UPROPERTY(EditAnywhere, Category = PlayerStats)
-	float MaxHealth = 100.0f;
 
-	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = PlayerStats)
-	float Health = 100.0f;
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float MaxHealth = 100.f;
 
-	bool bEliminated = false;
-
-	UPROPERTY(EditDefaultsOnly)
-	float EliminationDelay = 3.0f;
-
-	FTimerHandle EliminationTimer;
-
-	void EliminationFinished();
+	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
+	float Health = 100.f;
 
 	UFUNCTION()
 	void OnRep_Health();
 
 	UPROPERTY()
-	ABlasterPlayerController* BlasterPlayerController;
+	class ABlasterPlayerController* BlasterPlayerController;
 
+	bool bElimmed = false;
 
-	/*
-	//Dissolve Effect
+	FTimerHandle ElimTimer;
+
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
+
+	void ElimTimerFinished();
+
+	/**
+	* Dissolve effect
 	*/
 
 	UPROPERTY(VisibleAnywhere)
-	UTimelineComponent* DissolveTimeLine;
+	UTimelineComponent* DissolveTimeline;
 	FOnTimelineFloat DissolveTrack;
 
 	UPROPERTY(EditAnywhere)
@@ -193,50 +160,47 @@ private:
 
 	UFUNCTION()
 	void UpdateDissolveMaterial(float DissolveValue);
-	void CreateDynamicDissolveMaterialInstance();
 	void StartDissolve();
-	void DisableInputAndCollisionOfPlayer();
 
-	//Dynamic Instances that we can change at Runtime
-	UPROPERTY(VisibleAnywhere, Category = Elimination)
+	// Dynamic instance that we can change at runtime
+	UPROPERTY(VisibleAnywhere, Category = Elim)
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
 
-	//Material Instances set on the Blueprint, used with the Dynamic Material instance
-	UPROPERTY(EditAnywhere, Category = Elimination)
-	UMaterialInstance* DissolveMaterialInstances;
+	// Material instance set on the Blueprint, used with the dynamic material instance
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* DissolveMaterialInstance;
 
-	/*
-	//Elimination Bot
+	/**
+	* Elim bot
 	*/
+
 	UPROPERTY(EditAnywhere)
-	UParticleSystem* EliminationBotEffect;
+	UParticleSystem* ElimBotEffect;
 
 	UPROPERTY(VisibleAnywhere)
-	UParticleSystemComponent* EliminationBotComponent;
+	UParticleSystemComponent* ElimBotComponent;
 
 	UPROPERTY(EditAnywhere)
-	USoundCue* ElimBotSound;
-
-	void SpawnElimBot();
+	class USoundCue* ElimBotSound;
 
 	UPROPERTY()
-	ABlasterPlayerState* BlasterPlayerState;
-
+	class ABlasterPlayerState* BlasterPlayerState;
 public:
-	void SetOverlappingWeapon(AWeapon *Weapon);
+	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
 	bool IsAiming();
-	FVector GetHitTarget() const;
-	AWeapon* GetEquippedWeapon();
 	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }
 	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
-	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return  TurningInPlace; }
-	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; };
+	AWeapon* GetEquippedWeapon();
+	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
+	FVector GetHitTarget() const;
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
-	FORCEINLINE bool IsEliminated() const { return bEliminated; }
+	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
-	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
-	FORCEINLINE bool GetDisableGamplay() const { return bDisableGameplay; }
 	ECombatState GetCombatState() const;
+	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
+	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
+	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMontage; }
 };

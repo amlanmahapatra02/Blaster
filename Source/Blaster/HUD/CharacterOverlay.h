@@ -7,37 +7,31 @@
 #include "CharacterOverlay.generated.h"
 
 /**
- * 
+ *
  */
-
-class UProgressBar;
-class UTextBlock;
-
 UCLASS()
 class BLASTER_API UCharacterOverlay : public UUserWidget
 {
 	GENERATED_BODY()
-	
 public:
-
-	UPROPERTY(meta=(BindWidget))
-	UProgressBar* HealthBar;
+	UPROPERTY(meta = (BindWidget))
+	class UProgressBar* HealthBar;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* HealthText;
+	class UTextBlock* HealthText;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ScoreAmount;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* DeathsAmount;
+	UTextBlock* DefeatsAmount;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* WeaponAmmoAmount;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* WeaponMagAmount;
+	UTextBlock* CarriedAmmoAmount;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* MatchCountDownText;
+	UTextBlock* MatchCountdownText;
 };

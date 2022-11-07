@@ -6,51 +6,39 @@
 #include "GameFramework/GameMode.h"
 #include "BlasterGameMode.generated.h"
 
-/**
- * 
- */
-
 namespace MatchState
 {
-	//Match During has been reached . Display winner and begin cooldown timer
-	extern BLASTER_API const FName CoolDown;
+	extern BLASTER_API const FName Cooldown; // Match duration has been reached. Display winner and begin cooldown timer.
 }
 
-class ACharacter;
-class AController;
-class ABlasterCharacter;
-class ABlasterPlayerController;
-
+/**
+ *
+ */
 UCLASS()
 class BLASTER_API ABlasterGameMode : public AGameMode
 {
 	GENERATED_BODY()
-
 public:
 	ABlasterGameMode();
 	virtual void Tick(float DeltaTime) override;
-	virtual void PlayerEliminated(ABlasterCharacter* EliminatedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController);
-	virtual void RequestRespawn(ACharacter* EliminatedCharacter, AController* EliminatedCharacterController);
-	
+	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController);
+	virtual void RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 
 	UPROPERTY(EditDefaultsOnly)
-	float WarmUpTime = 20.0f;
+	float WarmupTime = 10.f;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MatchTime = 120.0f;
+	float MatchTime = 120.f;
 
 	UPROPERTY(EditDefaultsOnly)
-	float CoolDownTime = 10.0f;
+	float CooldownTime = 10.f;
 
-	float LevelStartingTime = 0.0f;
+	float LevelStartingTime = 0.f;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnMatchStateSet() override;
 
 private:
-	float CountDownTime = 0.0f;
-
-public:
-	FORCEINLINE float GetCountDownTime() const { return CountDownTime; }
+	float CountdownTime = 0.f;
 };

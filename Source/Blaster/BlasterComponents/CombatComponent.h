@@ -9,20 +9,16 @@
 #include "Blaster/BlasterType/CombatState.h"
 #include "CombatComponent.generated.h"
 
-
-class ABlasterCharacter;
-class ABlasterPlayerController;
-class ABlasterHUD;
-
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BLASTER_API UCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
+public:
 	UCombatComponent();
-	friend ABlasterCharacter;
+	friend class ABlasterCharacter;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 	void Reload();
@@ -32,10 +28,12 @@ public:
 
 	void FireButtonPressed(bool bPressed);
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
+	UFUNCTION(BlueprintCallable)
+	void ShotgunShellReload();
 
+	void JumpToShotgunEnd();
+protected:
+	virtual void BeginPlay() override;
 	void SetAiming(bool bIsAiming);
 
 	UFUNCTION(Server, Reliable)
@@ -44,40 +42,31 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
+	void Fire();
+
 	UFUNCTION(Server, Reliable)
 	void ServerFire(const FVector_NetQuantize& TraceHitTarget);
 
-	void Fire();
-
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
+
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+
+	void SetHUDCrosshairs(float DeltaTime);
 
 	UFUNCTION(Server, Reliable)
 	void ServerReload();
 
 	void HandleReload();
-	void AutoReload();
 	int32 AmountToReload();
-	void PlayEquipSound();
-	void TraceUnderCrosshair(FHitResult& TraceHitResult);
-	void SetHUDCrosshairs(float DeltaTime);
-	void LoadCrosshairTexture(float DeltaTime);
-
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
 	UPROPERTY()
-	ABlasterCharacter* Character;
-
+	class ABlasterCharacter* Character;
 	UPROPERTY()
-	ABlasterPlayerController* Controller;
-
+	class ABlasterPlayerController* Controller;
 	UPROPERTY()
-	ABlasterHUD* HUD;
+	class ABlasterHUD* HUD;
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
@@ -93,58 +82,59 @@ private:
 
 	bool bFireButtonPressed;
 
+	/**
+	* HUD and crosshairs
+	*/
+
+	float CrosshairVelocityFactor;
+	float CrosshairInAirFactor;
+	float CrosshairAimFactor;
+	float CrosshairShootingFactor;
+
 	FVector HitTarget;
 
 	FHUDPackage HUDPackage;
 
-	//HUD and Crosshairs
-	float BaseCrosshairSpread = 0.50f;
-	float CrosshairVelocityFactor;
-	float CrosshairJumpFactor;
-	float CrosshairAimFactor;
-	float CrosshairShootingFactor;
-	float CrosshairPlayerFactor;
-	bool PlayerDeteched;
-
-	/*Aiming and FOV
+	/**
+	* Aiming and FOV
 	*/
 
-	//Field of View when not Aiming
+	// Field of view when not aiming; set to the camera's base FOV in BeginPlay
 	float DefaultFOV;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	float ZoomedFOV = 30.0f;
+	float ZoomedFOV = 30.f;
 
 	float CurrentFOV;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	float ZoomInterpSpeed = 20.0f;
+	float ZoomInterpSpeed = 20.f;
 
 	void InterpFOV(float DeltaTime);
-		
-	/*
-	//Automatic Fire
+
+	/**
+	* Automatic fire
 	*/
+
 	FTimerHandle FireTimer;
+	bool bCanFire = true;
 
 	void StartFireTimer();
-	void FireTimerFinish();
-
-	bool bCanFire = true;
+	void FireTimerFinished();
 
 	bool CanFire();
 
-	//Carried Ammo for the currently Equipped Weapon
-	UPROPERTY(ReplicatedUsing = OnRep_WeaponMagAmmo)
-	int32 WeaponMagAmmo;
+	// Carried ammo for the currently-equipped weapon
+	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo)
+	int32 CarriedAmmo;
 
 	UFUNCTION()
-	void OnRep_WeaponMagAmmo();
+	void OnRep_CarriedAmmo();
 
-	TMap<EWeaponType, int32> WeaponMagAmmoMap;
+	TMap<EWeaponType, int32> CarriedAmmoMap;
 
 	UPROPERTY(EditAnywhere)
-	int32 StartingARMag = 0;
+	int32 StartingARAmmo = 30;
 
 	UPROPERTY(EditAnywhere)
 	int32 StartingRocketAmmo = 0;
@@ -159,16 +149,21 @@ private:
 	int32 StartingShotgunAmmo = 0;
 
 	UPROPERTY(EditAnywhere)
-	int32 StartingSniperRifleAmmo = 0;
+	int32 StartingSniperAmmo = 0;
 
 	UPROPERTY(EditAnywhere)
 	int32 StartingGrenadeLauncherAmmo = 0;
 
-	void InitializeMagAmmo();
+	void InitializeCarriedAmmo();
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
-	ECombatState CombatState = ECombatState::ECS_UnOccupied;
+	ECombatState CombatState = ECombatState::ECS_Unoccupied;
 
 	UFUNCTION()
-	void OnRep_CombatState();
+		void OnRep_CombatState();
+
+	void UpdateAmmoValues();
+	void UpdateShotgunAmmoValues();
+
+public:
 };

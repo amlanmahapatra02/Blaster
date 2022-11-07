@@ -131,12 +131,13 @@ public:
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 
 	bool IsEmpty();
+	bool IsFull();
 
 //Weapon Crosshair Textures//
 public:
 
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
-	UTexture2D* CrosshairsCentre;
+	UTexture2D* CrosshairsCenter;
 
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
 	UTexture2D* CrosshairsLeft;

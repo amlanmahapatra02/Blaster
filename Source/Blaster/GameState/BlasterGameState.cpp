@@ -5,7 +5,6 @@
 #include "Net/UnrealNetwork.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 
-
 void ABlasterGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -13,11 +12,11 @@ void ABlasterGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(ABlasterGameState, TopScoringPlayers);
 }
 
-void ABlasterGameState::UpdateTopScore(ABlasterPlayerState* ScoringPlayer)
+void ABlasterGameState::UpdateTopScore(class ABlasterPlayerState* ScoringPlayer)
 {
 	if (TopScoringPlayers.Num() == 0)
 	{
-		TopScoringPlayers.AddUnique(ScoringPlayer);
+		TopScoringPlayers.Add(ScoringPlayer);
 		TopScore = ScoringPlayer->GetScore();
 	}
 	else if (ScoringPlayer->GetScore() == TopScore)
