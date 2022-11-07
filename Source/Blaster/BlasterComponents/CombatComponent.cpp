@@ -203,6 +203,7 @@ void UCombatComponent::AutoReload()
 void UCombatComponent::HandleReload()
 {
 	Character->PlayReloadMontage();
+	UE_LOG(LogTemp, Warning, TEXT("Reloading Working"));
 }
 
 int32 UCombatComponent::AmountToReload()
@@ -245,11 +246,13 @@ void UCombatComponent::ServerReload_Implementation()
 		{
 			Controller->SetHUDWeaponMagAmmo(WeaponMagAmmo);
 		}
-
-		EquippedWeapon->AddAmmo(-ReloadAmount);
-
-		CombatState = ECombatState::ECS_Reloading;
-		HandleReload();
+		
+		if (EquippedWeapon->GetAmmo() < EquippedWeapon->GetMagCapacity())
+		{
+			CombatState = ECombatState::ECS_Reloading;
+			HandleReload();
+			EquippedWeapon->AddAmmo(-ReloadAmount);
+		}
 	}
 }
 
