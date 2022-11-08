@@ -11,6 +11,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
+#include "WeaponTypes.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -26,6 +27,10 @@ AWeapon::AWeapon()
 	WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_PURPLE);
+	WeaponMesh->MarkRenderStateDirty();
+	EnableCustomDepth(true);
 
 	AreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AreaSphere"));
 	AreaSphere->SetupAttachment(RootComponent);
@@ -62,7 +67,7 @@ void AWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-//Replicate variable pass down to clients
+// Replicate variable pass down to clients
 void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -86,7 +91,7 @@ void AWeapon::OnRep_Owner()
 	}
 }
 
-void AWeapon::OnSphereOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AWeapon::OnSphereOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
 {
 	ABlasterCharacter *BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 
@@ -114,7 +119,7 @@ void AWeapon::ShowPickupWidget(bool bShowWidget)
 	}
 }
 
-//For Server Only
+// For Server Only
 void AWeapon::SetWeaponState(EWeaponState State)
 {
 	WeaponState = State;
@@ -134,6 +139,7 @@ void AWeapon::SetWeaponState(EWeaponState State)
 			WeaponMesh->SetEnableGravity(true);
 			WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		}
+		EnableCustomDepth(false);
 		break;
 
 	case EWeaponState::EWS_Dropped:
@@ -147,6 +153,44 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_PURPLE);
+		WeaponMesh->MarkRenderStateDirty();
+		EnableCustomDepth(false);
+		break;
+	}
+}
+
+// For Server and Client
+void AWeapon::OnRep_WeaponState()
+{
+	switch (WeaponState)
+	{
+	case EWeaponState::EWS_Equipped:
+		ShowPickupWidget(false);
+		WeaponMesh->SetSimulatePhysics(false);
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		if (WeaponType == EWeaponType::EWT_SMG)
+		{
+			WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			WeaponMesh->SetEnableGravity(true);
+			WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		}
+		EnableCustomDepth(false);
+		break;
+
+	case EWeaponState::EWS_Dropped:
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_PURPLE);
+		WeaponMesh->MarkRenderStateDirty();
+		EnableCustomDepth(true);
 		break;
 	}
 }
@@ -164,14 +208,14 @@ void AWeapon::SetHUDAmmo()
 	}
 }
 
-//Decrease the Ammo from the Mag and Update the HUD (runs only on server)
+// Decrease the Ammo from the Mag and Update the HUD (runs only on server)
 void AWeapon::SpendRound()
 {
 	Ammo = Ammo < 0 ? 0 : --Ammo;
 	SetHUDAmmo();
 }
 
-//Replicates SpendRound on all Clients
+// Replicates SpendRound on all Clients
 void AWeapon::OnRep_Ammo()
 {
 	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
@@ -183,60 +227,30 @@ void AWeapon::OnRep_Ammo()
 	SetHUDAmmo();
 }
 
-//For Server and Client
-void AWeapon::OnRep_WeaponState()
-{
-	switch (WeaponState)
-	{
-	case EWeaponState::EWS_Equipped:
-		ShowPickupWidget(false);
-		WeaponMesh->SetSimulatePhysics(false);
-		WeaponMesh->SetEnableGravity(false);
-		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		if (WeaponType == EWeaponType::EWT_SMG)
-		{
-			WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			WeaponMesh->SetEnableGravity(true);
-			WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		}
-		break;
-
-	case EWeaponState::EWS_Dropped:
-		WeaponMesh->SetSimulatePhysics(true);
-		WeaponMesh->SetEnableGravity(true);
-		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-		break;
-	}
-}
-
-void AWeapon::Fire(const FVector& HitTarget)
+void AWeapon::Fire(const FVector &HitTarget)
 {
 	if (FireAnimation)
 	{
 		WeaponMesh->PlayAnimation(FireAnimation, false);
 	}
-	
+
 	if (BulletCasingClass)
 	{
-		const USkeletalMeshSocket* AmmoEjectSocket = WeaponMesh->GetSocketByName(FName("AmmoEject"));
+		const USkeletalMeshSocket *AmmoEjectSocket = WeaponMesh->GetSocketByName(FName("AmmoEject"));
 
 		if (AmmoEjectSocket)
 		{
 			FTransform SocketTransform = AmmoEjectSocket->GetSocketTransform(WeaponMesh);
 
-			//Spawning the Bullet Casing
-			UWorld* World = GetWorld();
+			// Spawning the Bullet Casing
+			UWorld *World = GetWorld();
 
 			if (World)
 			{
 				World->SpawnActor<ABulletCasing>(
-					 BulletCasingClass,
-					 SocketTransform.GetLocation(),
-					 SocketTransform.GetRotation().Rotator()
-					);
+					BulletCasingClass,
+					SocketTransform.GetLocation(),
+					SocketTransform.GetRotation().Rotator());
 			}
 		}
 	}
@@ -270,3 +284,12 @@ bool AWeapon::IsFull()
 	return Ammo == MagCapacity;
 }
 
+bool AWeapon::EnableCustomDepth(bool bEnable)
+{
+	if (WeaponMesh)
+	{
+		WeaponMesh->SetRenderCustomDepth(bEnable);
+	}
+
+	return false;
+}

@@ -62,6 +62,11 @@ public:
 	void AddAmmo(int32 AmmoToAdd);
 	void SetHUDAmmo();
 
+	/*
+	//Enable or Disable Custom Depth
+	*/
+	bool EnableCustomDepth(bool bEnable);
+
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")

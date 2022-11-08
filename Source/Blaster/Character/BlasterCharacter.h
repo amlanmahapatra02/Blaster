@@ -18,12 +18,15 @@ class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCro
 public:
 	ABlasterCharacter();
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
+
 	void PlayFireMontage(bool bAiming);
 	void PlayReloadMontage();
 	void PlayElimMontage();
+	void PlayThrowGrenadeMontage();
+
 	virtual void OnRep_ReplicatedMovement() override;
 	void Elim();
 	UFUNCTION(NetMulticast, Reliable)
@@ -56,31 +59,33 @@ protected:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void PlayHitReactMontage();
+	void GrenadeButtonPressed();
 
 	UFUNCTION()
-	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+	void ReceiveDamage(AActor *DamagedActor, float Damage, const UDamageType *DamageType, class AController *InstigatorController, AActor *DamageCauser);
 	void UpdateHUDHealth();
 	// Poll for any relelvant classes and initialize our HUD
 	void PollInit();
 	void RotateInPlace(float DeltaTime);
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
-	class USpringArmComponent* CameraBoom;
+	class USpringArmComponent *CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
-	class UCameraComponent* FollowCamera;
+	class UCameraComponent *FollowCamera;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UWidgetComponent* OverheadWidget;
+	class UWidgetComponent *OverheadWidget;
 
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
-	class AWeapon* OverlappingWeapon;
+	class AWeapon *OverlappingWeapon;
 
 	UFUNCTION()
-	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+	void OnRep_OverlappingWeapon(AWeapon *LastWeapon);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UCombatComponent* Combat;
+	class UCombatComponent *Combat;
 
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
@@ -94,20 +99,23 @@ private:
 	void TurnInPlace(float DeltaTime);
 
 	/**
-	* Animation montages
-	*/
+	 * Animation montages
+	 */
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	class UAnimMontage* FireWeaponMontage;
+	class UAnimMontage *FireWeaponMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	UAnimMontage* ReloadMontage;
+	UAnimMontage *ReloadMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	UAnimMontage* HitReactMontage;
+	UAnimMontage *HitReactMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	UAnimMontage* ElimationMontage;
+	UAnimMontage *ElimationMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* ThrowGrenadeMontage;
 
 	void HideCameraIfCharacterClose();
 
@@ -123,8 +131,8 @@ private:
 	float CalculateSpeed();
 
 	/**
-	* Player health
-	*/
+	 * Player health
+	 */
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float MaxHealth = 100.f;
@@ -136,7 +144,7 @@ private:
 	void OnRep_Health();
 
 	UPROPERTY()
-	class ABlasterPlayerController* BlasterPlayerController;
+	class ABlasterPlayerController *BlasterPlayerController;
 
 	bool bElimmed = false;
 
@@ -148,15 +156,15 @@ private:
 	void ElimTimerFinished();
 
 	/**
-	* Dissolve effect
-	*/
+	 * Dissolve effect
+	 */
 
 	UPROPERTY(VisibleAnywhere)
-	UTimelineComponent* DissolveTimeline;
+	UTimelineComponent *DissolveTimeline;
 	FOnTimelineFloat DissolveTrack;
 
 	UPROPERTY(EditAnywhere)
-	UCurveFloat* DissolveCurve;
+	UCurveFloat *DissolveCurve;
 
 	UFUNCTION()
 	void UpdateDissolveMaterial(float DissolveValue);
@@ -164,43 +172,44 @@ private:
 
 	// Dynamic instance that we can change at runtime
 	UPROPERTY(VisibleAnywhere, Category = Elim)
-	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
+	UMaterialInstanceDynamic *DynamicDissolveMaterialInstance;
 
 	// Material instance set on the Blueprint, used with the dynamic material instance
 	UPROPERTY(EditAnywhere, Category = Elim)
-	UMaterialInstance* DissolveMaterialInstance;
+	UMaterialInstance *DissolveMaterialInstance;
 
 	/**
-	* Elim bot
-	*/
+	 * Elim bot
+	 */
 
 	UPROPERTY(EditAnywhere)
-	UParticleSystem* ElimBotEffect;
+	UParticleSystem *ElimBotEffect;
 
 	UPROPERTY(VisibleAnywhere)
-	UParticleSystemComponent* ElimBotComponent;
+	UParticleSystemComponent *ElimBotComponent;
 
 	UPROPERTY(EditAnywhere)
-	class USoundCue* ElimBotSound;
+	class USoundCue *ElimBotSound;
 
 	UPROPERTY()
-	class ABlasterPlayerState* BlasterPlayerState;
+	class ABlasterPlayerState *BlasterPlayerState;
+
 public:
-	void SetOverlappingWeapon(AWeapon* Weapon);
+	void SetOverlappingWeapon(AWeapon *Weapon);
 	bool IsWeaponEquipped();
 	bool IsAiming();
 	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }
 	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
-	AWeapon* GetEquippedWeapon();
+	AWeapon *GetEquippedWeapon();
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
 	FVector GetHitTarget() const;
-	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE UCameraComponent *GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	ECombatState GetCombatState() const;
-	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
+	FORCEINLINE UCombatComponent *GetCombat() const { return Combat; }
 	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
-	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMontage; }
+	FORCEINLINE UAnimMontage *GetReloadMontage() const { return ReloadMontage; }
 };

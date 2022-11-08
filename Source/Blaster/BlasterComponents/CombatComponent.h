@@ -32,6 +32,9 @@ public:
 	void ShotgunShellReload();
 
 	void JumpToShotgunEnd();
+
+	UFUNCTION(BlueprintCallable)
+	void ThrowGrenadeFinished();
 protected:
 	virtual void BeginPlay() override;
 	void SetAiming(bool bIsAiming);
@@ -59,6 +62,11 @@ protected:
 
 	void HandleReload();
 	int32 AmountToReload();
+
+	void ThrowGrenade();
+
+	UFUNCTION(Server, Reliable)
+	void ServerThrowGrenade();
 
 private:
 	UPROPERTY()
@@ -160,7 +168,7 @@ private:
 	ECombatState CombatState = ECombatState::ECS_Unoccupied;
 
 	UFUNCTION()
-		void OnRep_CombatState();
+	void OnRep_CombatState();
 
 	void UpdateAmmoValues();
 	void UpdateShotgunAmmoValues();
