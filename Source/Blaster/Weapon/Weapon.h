@@ -137,6 +137,7 @@ public:
 
 	bool IsEmpty();
 	bool IsFull();
+	bool bDestroyWeapon = false;
 
 //Weapon Crosshair Textures//
 public:
