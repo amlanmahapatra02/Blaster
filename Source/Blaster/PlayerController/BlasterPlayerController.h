@@ -32,6 +32,7 @@ public:
 	void OnMatchStateSet(FName State);
 	void HandleMatchHasStarted();
 	void HandleCooldown();
+
 protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
@@ -62,6 +63,10 @@ protected:
 
 	UFUNCTION(Client, Reliable)
 	void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime);
+
+	void CheckPing(float DeltaTime);
+	void HighPingWarning();
+	void StopHighPingWarning();
 
 private:
 	UPROPERTY()
@@ -104,4 +109,17 @@ private:
 
 	float HUDWeaponAmmo;
 	bool bInitializeWeaponAmmo = false;
+
+	float HighPingRunningTime = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	float HighPingDuration = 5.0f;
+
+	float PingAnimationRunningTime = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	float CheckPingFrequency = 20.0f;
+
+	UPROPERTY(EditAnywhere)
+	float HighPingThreshold = 80.0f;
 };

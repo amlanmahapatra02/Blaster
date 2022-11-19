@@ -6,10 +6,8 @@
 
 APickupSpawnPoint::APickupSpawnPoint()
 {
- 	
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
-
 }
 
 void APickupSpawnPoint::BeginPlay()
@@ -43,7 +41,7 @@ void APickupSpawnPoint::SpawnPickupTimerFinished()
 
 void APickupSpawnPoint::StartSpawnPickupTimer(AActor* DestroyedActor)
 {
-	const float SpawnTime = FMath::RandRange(SpawnPickupTimeMin, SpawnPickupTimeMax);
+	const float SpawnTime = FMath::FRandRange(SpawnPickupTimeMin, SpawnPickupTimeMax);
 	GetWorldTimerManager().SetTimer(
 		SpawnPickupTimer,
 		this,
@@ -57,3 +55,4 @@ void APickupSpawnPoint::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+

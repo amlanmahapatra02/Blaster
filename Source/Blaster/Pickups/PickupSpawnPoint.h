@@ -10,13 +10,12 @@ UCLASS()
 class BLASTER_API APickupSpawnPoint : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
-	
+
+public:
 	APickupSpawnPoint();
 	virtual void Tick(float DeltaTime) override;
 
-protected:	
+protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere)
@@ -30,7 +29,6 @@ protected:
 
 	UFUNCTION()
 	void StartSpawnPickupTimer(AActor* DestroyedActor);
-
 private:
 	FTimerHandle SpawnPickupTimer;
 
@@ -39,4 +37,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float SpawnPickupTimeMax;
+
+public:
 };
