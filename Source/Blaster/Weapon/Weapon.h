@@ -27,6 +27,15 @@ enum class EWeaponState : uint8
 	EWS_MAX UMETA(DisplayName = "DefaultMAX")
 };
 
+UENUM(BlueprintType)
+enum class EFireType : uint8
+{
+	EFT_HitScan UMETA(DisplayName = "Hit Scan Weapon"),
+	EFT_Projectile UMETA(DisplayName = "Projectile Weapon"),
+	EFT_Shotgun UMETA(DisplayName = "Shotgun Weapon"),
+	EFT_MAX UMETA(DisplayName = "DefaultMax")
+};
+
 UCLASS()
 class BLASTER_API AWeapon : public AActor
 {
@@ -67,7 +76,7 @@ public:
 	void DropWeapon();
 	void AddAmmo(int32 AmmoToAdd);
 	void SetHUDAmmo();
-
+	FVector TraceEndWithScatter(const FVector& HitTarget);
 	/*
 	//Enable or Disable Custom Depth
 	*/
@@ -113,6 +122,12 @@ private:
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
 
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float DistanceToSphere = 800.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float SphereRadius = 75.0f;
+
 	UFUNCTION()
 	void OnRep_WeaponState();
 
@@ -144,6 +159,12 @@ public:
 	bool IsEmpty();
 	bool IsFull();
 	bool bDestroyWeapon = false;
+
+	UPROPERTY(EditAnywhere)
+	EFireType FireType;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	bool bUseScatter = false;
 
 //Weapon Crosshair Textures//
 public:
