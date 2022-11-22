@@ -841,3 +841,9 @@ ECombatState ABlasterCharacter::GetCombatState() const
 		return ECombatState::ECS_MAX;
 	return Combat->CombatState;
 }
+
+bool ABlasterCharacter::IsLocallyReloading()
+{
+	if (Combat == nullptr) return false;
+	return Combat->bLocallyReloading;
+}

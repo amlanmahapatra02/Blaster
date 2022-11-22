@@ -66,6 +66,15 @@ protected:
 	virtual void OnDropped();
 	virtual void OnEquippedSecondary();
 
+	/*
+	* Trace end with Scatter
+	*/
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float DistanceToSphere = 800.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float SphereRadius = 75.0f;
+
 public:	
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -102,14 +111,26 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ABulletCasing> BulletCasingClass;
 
-	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	UPROPERTY(EditAnywhere)
 	int32 Ammo;
 
 	UPROPERTY(EditAnywhere)
 	int32 MagCapacity;
 
-	UFUNCTION()
-	void OnRep_Ammo();
+	/*The number of unproccessed server request for Ammo
+	* Incremented in SpendRound(), decremented in ClientUpdateAmmo(ServerAmmo)
+	*/
+	int32 Sequence = 0;
+
+	/*
+	* Client Side Prediction for Ammo because if we replicate ammo, under high ping we
+	* would experiences an jitter
+	*/
+	UFUNCTION(Client, Reliable)
+	void ClientUpdateAmmo(int32 ServerAmmo);
+
+	UFUNCTION(Client, Reliable)
+	void ClientAddAmmo(int32 AmmoToAdd);
 
 	void SpendRound();
 
@@ -120,13 +141,7 @@ private:
 	ABlasterPlayerController* BlasterOwnerController;
 
 	UPROPERTY(EditAnywhere)
-	EWeaponType WeaponType;
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-	float DistanceToSphere = 800.0f;
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-	float SphereRadius = 75.0f;
+	EWeaponType WeaponType; 
 
 	UFUNCTION()
 	void OnRep_WeaponState();

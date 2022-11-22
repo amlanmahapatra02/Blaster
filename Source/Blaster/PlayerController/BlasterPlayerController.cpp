@@ -451,7 +451,7 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 		if (PlayerState)
 		{
 			//The Way unreal calculate ping is divide by to compress it into uint8 so we multiply by 4 to get the true ping
-			if (PlayerState->GetPing() * 4 > HighPingThreshold)
+			if (PlayerState->GetCompressedPing() * 4 > HighPingThreshold)
 			{
 				HighPingWarning();
 				PingAnimationRunningTime = 0.0f;
