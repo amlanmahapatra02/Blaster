@@ -15,7 +15,7 @@ void AAmmoPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 		UCombatComponent* Combat = BlasterCharacter->GetCombat();
 		if (Combat)
 		{
-			Combat->PickUpAmmo(WeaponType, AmmoAmmount);
+			Combat->PickupAmmo(WeaponType, AmmoAmmount);
 		}
 	}
 	Destroy();

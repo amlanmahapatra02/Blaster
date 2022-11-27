@@ -21,9 +21,8 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
-	void SwapWeapon();
+	void SwapWeapons();
 	void Reload();
-
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
 
@@ -43,10 +42,8 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerLaunchGrenade(const FVector_NetQuantize& Target);
 
-	void PickUpAmmo(EWeaponType WeaponType, int32 AmmoAmount);
-
+	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 	bool bLocallyReloading = false;
-
 protected:
 	virtual void BeginPlay() override;
 	void SetAiming(bool bIsAiming);
@@ -98,7 +95,7 @@ protected:
 	TSubclassOf<class AProjectile> GrenadeClass;
 
 	void DropEquippedWeapon();
-	void AttachActorToRighHand(AActor* ActorToAttach);
+	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
 	void AttachActorToBackpack(AActor* ActorToAttach);
 	void UpdateCarriedAmmo();
@@ -107,7 +104,6 @@ protected:
 	void ShowAttachedGrenade(bool bShowGrenade);
 	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
 	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
-
 private:
 	UPROPERTY()
 	class ABlasterCharacter* Character;
@@ -122,7 +118,7 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_SecondaryWeapon)
 	AWeapon* SecondaryWeapon;
 
-	UPROPERTY(Replicated, ReplicatedUsing = OnRep_Aiming)
+	UPROPERTY(ReplicatedUsing = OnRep_Aiming)
 	bool bAiming = false;
 
 	bool bAimButtonPressed = false;
@@ -224,18 +220,18 @@ private:
 	void UpdateAmmoValues();
 	void UpdateShotgunAmmoValues();
 
-	UPROPERTY(ReplicatedUsing = OnRep_Grenade)
+	UPROPERTY(ReplicatedUsing = OnRep_Grenades)
 	int32 Grenades = 4;
 
 	UFUNCTION()
-	void OnRep_Grenade();
+	void OnRep_Grenades();
 
 	UPROPERTY(EditAnywhere)
-	int32 MaxGrenade = 4;
+	int32 MaxGrenades = 4;
 
 	void UpdateHUDGrenades();
 
 public:
-	FORCEINLINE int32 GetGrenade() const { return Grenades; }
-	bool ShouldSwapWeapon();
+	FORCEINLINE int32 GetGrenades() const { return Grenades; }
+	bool ShouldSwapWeapons();
 };
