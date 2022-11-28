@@ -33,6 +33,8 @@ public:
 	void HandleMatchHasStarted();
 	void HandleCooldown();
 
+	float SingleTripTime = 0.0f;
+
 protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
