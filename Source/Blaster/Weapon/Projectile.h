@@ -68,14 +68,24 @@ public:
 
 	virtual void Destroyed() override;
 
+	/*
+	* Used with Server-side rewind (74-79)
+	*/
+	bool bUseServerRewind = false;
+	FVector_NetQuantize TraceStart;
+	FVector_NetQuantize100 InitialVelocity;
+
 	UPROPERTY(EditAnywhere)
-	float Damage = 20.f;
+	float InitialSpeed = 15000.0f;
 
 	UPROPERTY(EditDefaultsOnly)
 	float MinimumDamage = 10.0f;
 
 	UPROPERTY(EditAnywhere)
 	float FallOff = 1.0f;
+
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
 
 private:
 
