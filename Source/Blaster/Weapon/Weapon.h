@@ -78,7 +78,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.0f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(Replicated, EditAnywhere)
 	bool bUseServerSideRewind = false;
 
 	UPROPERTY()
@@ -86,6 +86,9 @@ protected:
 
 	UPROPERTY()
 	ABlasterPlayerController* BlasterOwnerController;
+
+	UFUNCTION()
+	void OnPingTooHigh(bool bPingToohigh);
 
 public:	
 	virtual void Tick(float DeltaTime) override;

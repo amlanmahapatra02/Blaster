@@ -13,7 +13,6 @@
 #include "Blaster/HUD/Announcement.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
-#include "Blaster/Weapon/Weapon.h"
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Components/Image.h"
 
@@ -375,6 +374,11 @@ void ABlasterPlayerController::OnRep_MatchState()
 	}
 }
 
+void ABlasterPlayerController::ServerReportPingStatus_Implementation(bool bHighPing)
+{
+	HighPingDelegate.Broadcast(bHighPing);
+}
+
 void ABlasterPlayerController::HandleMatchHasStarted()
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
@@ -445,6 +449,8 @@ void ABlasterPlayerController::HandleCooldown()
 
 void ABlasterPlayerController::CheckPing(float DeltaTime)
 {
+	if (HasAuthority()) return;
+
 	HighPingRunningTime += DeltaTime;
 	if (HighPingRunningTime > CheckPingFrequency)
 	{
@@ -452,10 +458,16 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 		if (PlayerState)
 		{
 			//The Way unreal calculate ping is divide by to compress it into uint8 so we multiply by 4 to get the true ping
+			UE_LOG(LogTemp, Warning, TEXT("PlayerState->GetCompressedPing() * 4"), PlayerState->GetCompressedPing() * 4);
 			if (PlayerState->GetCompressedPing() * 4 > HighPingThreshold)
 			{
 				HighPingWarning();
 				PingAnimationRunningTime = 0.0f;
+				ServerReportPingStatus(true);
+			}
+			else
+			{
+				ServerReportPingStatus(false);
 			}
 		}
 		HighPingRunningTime = 0.0f;
