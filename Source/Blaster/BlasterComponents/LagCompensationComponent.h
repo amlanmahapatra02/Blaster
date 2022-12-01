@@ -70,17 +70,13 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
 
-	FServerSideRewindResult ServerSideRewind(class ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime);
-	
 	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrame, const FFramePackage& YoungerFrame, float HitTime);
-
-	FServerSideRewindResult ConfirmHit(const FFramePackage& Package,
-		ABlasterCharacter* HitCharacter,
-		const FVector_NetQuantize& TraceStart,
-		const FVector_NetQuantize& HitLocation);
 
 	UFUNCTION(Server, Reliable)
 	void ServerScoreRequest(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime, class AWeapon* DamageCauser);
+
+	UFUNCTION(Server, Reliable)
+	void ProjectileScoreRequest(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime);
 
 	UFUNCTION(Server, Reliable)
 	void ShotgunServerScoreRequest(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime);
@@ -93,6 +89,25 @@ public:
 
 	FFramePackage GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime);
 
+	/*
+	* HitScan Weapon SSR and confirm hit
+	*/
+	FServerSideRewindResult ServerSideRewind(
+		class ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize& HitLocation,
+		float HitTime);
+
+	FServerSideRewindResult ConfirmHit(
+		const FFramePackage& Package,
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize& HitLocation);
+
+	/*
+	* Shotgun Weapon SSR and confirm hit
+	*/
+
 	FShotgunServerRewindResult ShotgunServerSideRewind(
 		const TArray<ABlasterCharacter*>& HitCharacters,
 		const FVector_NetQuantize& TraceStart,
@@ -103,6 +118,23 @@ public:
 		const TArray<FFramePackage>& FramePackage,
 		const FVector_NetQuantize& TraceStart,
 		const TArray<FVector_NetQuantize>& HitLocations);
+
+	/*
+	* Projectile weapon SSR and confirm hit
+	*/
+
+	FServerSideRewindResult ProjectileServerSideRewind(
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime);
+
+	FServerSideRewindResult ProjectileConfirmHit(
+		const FFramePackage& FramePackage,
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime);
 
 protected:
 	virtual void BeginPlay() override;
