@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "CombatComponent.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/Character/BlasterCharacter.h"
@@ -193,7 +190,7 @@ bool UCombatComponent::ServerFire_Validate(const FVector_NetQuantize& TraceHitTa
 {
 	if (EquippedWeapon)
 	{
-		bool bNearlyEqual = FMath::IsNearlyEqual(EquippedWeapon->FireDelay, 0.001f);
+		bool bNearlyEqual = FMath::IsNearlyEqual(EquippedWeapon->FireDelay, FireDelay, 0.001f);
 		return bNearlyEqual;
 	}
 	return true;
@@ -268,7 +265,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::SwapWeapons()
 {
-	if (CombatState != ECombatState::ECS_Unoccupied || Character == nullptr) return;
+	if (CombatState != ECombatState::ECS_Unoccupied || Character == nullptr || !Character->HasAuthority()) return;
 
 	Character->PlaySwapMontage();
 	CombatState = ECombatState::ECS_SwappingWeapons;
@@ -428,7 +425,7 @@ void UCombatComponent::FinishSwap()
 	if (SecondaryWeapon) SecondaryWeapon->EnableCustomDepth(true);
 }
 
-void UCombatComponent::FinishSwapAttachWeapon()
+void UCombatComponent::FinishSwapAttachWeapons()
 {
 	AWeapon* TempWeapon = EquippedWeapon;
 	EquippedWeapon = SecondaryWeapon;

@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -31,7 +29,7 @@ public:
 	void FinishSwap();
 
 	UFUNCTION(BlueprintCallable)
-	void FinishSwapAttachWeapon();
+	void FinishSwapAttachWeapons();
 
 	void FireButtonPressed(bool bPressed);
 
