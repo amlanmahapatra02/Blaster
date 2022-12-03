@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -45,10 +43,11 @@ struct FServerSideRewindResult
 	bool bHitConfirmed;
 
 	UPROPERTY()
-	bool bHeadShot;
+		bool bHeadShot;
 };
+
 USTRUCT(BlueprintType)
-struct FShotgunServerRewindResult
+struct FShotgunServerSideRewindResult
 {
 	GENERATED_BODY()
 
@@ -57,40 +56,22 @@ struct FShotgunServerRewindResult
 
 	UPROPERTY()
 	TMap<ABlasterCharacter*, uint32> BodyShots;
+
 };
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BLASTER_API ULagCompensationComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	ULagCompensationComponent();
 	friend class ABlasterCharacter;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
+	void ShowFramePackage(const FFramePackage& Package, const FColor& Color);
 
-	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrame, const FFramePackage& YoungerFrame, float HitTime);
-
-	UFUNCTION(Server, Reliable)
-	void ServerScoreRequest(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime, class AWeapon* DamageCauser);
-
-	UFUNCTION(Server, Reliable)
-	void ProjectileScoreRequest(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime);
-
-	UFUNCTION(Server, Reliable)
-	void ShotgunServerScoreRequest(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime);
-
-	void CacheBoxPositions(ABlasterCharacter* HitCharacter, FFramePackage& OutFramePackage);
-	void MoveBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
-	void ResetHitBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
-	void EnableCharacterMeshCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
-	void SaveFramePackage();
-
-	FFramePackage GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime);
-
-	/*
-	* HitScan Weapon SSR and confirm hit
+	/**
+	* Hitscan
 	*/
 	FServerSideRewindResult ServerSideRewind(
 		class ABlasterCharacter* HitCharacter,
@@ -98,48 +79,90 @@ public:
 		const FVector_NetQuantize& HitLocation,
 		float HitTime);
 
+	/**
+	* Projectile
+	*/
+	FServerSideRewindResult ProjectileServerSideRewind(
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime
+	);
+
+	/**
+	* Shotgun
+	*/
+	FShotgunServerSideRewindResult ShotgunServerSideRewind(
+		const TArray<ABlasterCharacter*>& HitCharacters,
+		const FVector_NetQuantize& TraceStart,
+		const TArray<FVector_NetQuantize>& HitLocations,
+		float HitTime);
+
+	UFUNCTION(Server, Reliable)
+	void ServerScoreRequest(
+			ABlasterCharacter* HitCharacter,
+			const FVector_NetQuantize& TraceStart,
+			const FVector_NetQuantize& HitLocation,
+			float HitTime,
+			class AWeapon* DamageCauser
+		);
+
+	UFUNCTION(Server, Reliable)
+	void ProjectileServerScoreRequest(
+			ABlasterCharacter* HitCharacter,
+			const FVector_NetQuantize& TraceStart,
+			const FVector_NetQuantize100& InitialVelocity,
+			float HitTime
+		);
+
+	UFUNCTION(Server, Reliable)
+	void ShotgunServerScoreRequest(
+			const TArray<ABlasterCharacter*>& HitCharacters,
+			const FVector_NetQuantize& TraceStart,
+			const TArray<FVector_NetQuantize>& HitLocations,
+			float HitTime
+		);
+
+protected:
+	virtual void BeginPlay() override;
+	void SaveFramePackage(FFramePackage& Package);
+	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrame, const FFramePackage& YoungerFrame, float HitTime);
+	void CacheBoxPositions(ABlasterCharacter* HitCharacter, FFramePackage& OutFramePackage);
+	void MoveBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
+	void ResetHitBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
+	void EnableCharacterMeshCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
+	void SaveFramePackage();
+	FFramePackage GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime);
+
+	/**
+	* Hitscan
+	*/
 	FServerSideRewindResult ConfirmHit(
 		const FFramePackage& Package,
 		ABlasterCharacter* HitCharacter,
 		const FVector_NetQuantize& TraceStart,
 		const FVector_NetQuantize& HitLocation);
 
-	/*
-	* Shotgun Weapon SSR and confirm hit
+	/**
+	* Projectile
 	*/
-
-	FShotgunServerRewindResult ShotgunServerSideRewind(
-		const TArray<ABlasterCharacter*>& HitCharacters,
-		const FVector_NetQuantize& TraceStart,
-		const TArray<FVector_NetQuantize>& HitLocations,
-		float HitTime);
-
-	FShotgunServerRewindResult ShotgunConfirmHit(
-		const TArray<FFramePackage>& FramePackage,
-		const FVector_NetQuantize& TraceStart,
-		const TArray<FVector_NetQuantize>& HitLocations);
-
-	/*
-	* Projectile weapon SSR and confirm hit
-	*/
-
-	FServerSideRewindResult ProjectileServerSideRewind(
-		ABlasterCharacter* HitCharacter,
-		const FVector_NetQuantize& TraceStart,
-		const FVector_NetQuantize100& InitialVelocity,
-		float HitTime);
-
 	FServerSideRewindResult ProjectileConfirmHit(
-		const FFramePackage& FramePackage,
+		const FFramePackage& Package,
 		ABlasterCharacter* HitCharacter,
 		const FVector_NetQuantize& TraceStart,
 		const FVector_NetQuantize100& InitialVelocity,
-		float HitTime);
+		float HitTime
+	);
 
-protected:
-	virtual void BeginPlay() override;
+	/**
+	* Shotgun
+	*/
 
-	void SaveFramePackage(FFramePackage& Package);
+	FShotgunServerSideRewindResult ShotgunConfirmHit(
+		const TArray<FFramePackage>& FramePackages,
+		const FVector_NetQuantize& TraceStart,
+		const TArray<FVector_NetQuantize>& HitLocations
+	);
 
 private:
 
@@ -152,5 +175,9 @@ private:
 	TDoubleLinkedList<FFramePackage> FrameHistory;
 
 	UPROPERTY(EditAnywhere)
-	float MaxRecordTime = 4.0f;
+	float MaxRecordTime = 4.f;
+
+public:
+
+
 };
