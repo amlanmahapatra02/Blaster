@@ -84,8 +84,13 @@ public:
 	UPROPERTY(EditAnywhere)
 	float FallOff = 1.0f;
 
+	//Only set this for Grenades and Rockets
 	UPROPERTY(EditAnywhere)
-	float Damage = 120.0f;
+	float Damage = 20.0f;
+
+	//Doesnt matter for Grenades and Rockets
+	UPROPERTY(EditAnywhere)
+	float HeadShotDamage = 40.0f;
 
 private:
 

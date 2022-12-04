@@ -5,12 +5,11 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
-#include "Blaster/BlasterComponents/LagCompensationComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Particles/ParticleSystemComponent.h"
+#include "particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "WeaponTypes.h"
-#include "DrawDebugHelpers.h"
+#include "Blaster/BlasterComponents/LagCompensationComponent.h"
 
 void AHitScanWeapon::Fire(const FVector& HitTarget)
 {
@@ -30,37 +29,52 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 		WeaponTraceHit(Start, HitTarget, FireHit);
 
 		ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
-		if (BlasterCharacter && InstigatorController && OwnerPawn->IsLocallyControlled())
+		if (BlasterCharacter && InstigatorController)
 		{
-			if (HasAuthority())
+			bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
+			if (HasAuthority() && bCauseAuthDamage)
 			{
-				UGameplayStatics::ApplyDamage(BlasterCharacter, Damage, InstigatorController, this, UDamageType::StaticClass());
-			}
+				const float DamageToCause = FireHit.BoneName.ToString() == FString("head") ? HeadShotDamage : Damage;
 
+				UGameplayStatics::ApplyDamage(
+					BlasterCharacter,
+					DamageToCause,
+					InstigatorController,
+					this,
+					UDamageType::StaticClass()
+				);
+			}
 			if (!HasAuthority() && bUseServerSideRewind)
 			{
 				BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
 				BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
-				if (BlasterOwnerCharacter && BlasterOwnerController && BlasterOwnerCharacter->GetLagCompensation() && BlasterOwnerCharacter->IsLocallyControlled())
+				if (BlasterOwnerController && BlasterOwnerCharacter && BlasterOwnerCharacter->GetLagCompensation() && BlasterOwnerCharacter->IsLocallyControlled())
 				{
 					BlasterOwnerCharacter->GetLagCompensation()->ServerScoreRequest(
 						BlasterCharacter,
 						Start,
 						HitTarget,
-						BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime,
-						this);
+						BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime
+					);
 				}
 			}
 		}
-
 		if (ImpactParticle)
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, FireHit.ImpactPoint, FireHit.ImpactNormal.Rotation());
+			UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				ImpactParticle,
+				FireHit.ImpactPoint,
+				FireHit.ImpactNormal.Rotation()
+			);
 		}
-
 		if (HitSound)
 		{
-			UGameplayStatics::PlaySoundAtLocation(this, HitSound, FireHit.ImpactPoint);
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				HitSound,
+				FireHit.ImpactPoint
+			);
 		}
 
 		if (MuzzleFlash)
@@ -73,7 +87,11 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 		}
 		if (FireSound)
 		{
-			UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				FireSound,
+				GetActorLocation()
+			);
 		}
 	}
 }
@@ -81,13 +99,11 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit)
 {
 	UWorld* World = GetWorld();
-
 	if (World)
 	{
-		FVector End = TraceStart + (HitTarget - TraceStart) * 1.25;
+		FVector End = TraceStart + (HitTarget - TraceStart) * 1.25f;
 
-		World->LineTraceSingleByChannel
-		(
+		World->LineTraceSingleByChannel(
 			OutHit,
 			TraceStart,
 			End,
@@ -98,8 +114,10 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 		{
 			BeamEnd = OutHit.ImpactPoint;
 		}
-
-		DrawDebugSphere(GetWorld(), BeamEnd, 16.0f, 12, FColor::Orange, true);
+		else
+		{
+			OutHit.ImpactPoint = End;
+		}
 
 		if (BeamParticles)
 		{
@@ -110,7 +128,6 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 				FRotator::ZeroRotator,
 				true
 			);
-
 			if (Beam)
 			{
 				Beam->SetVectorParameter(FName("Target"), BeamEnd);
