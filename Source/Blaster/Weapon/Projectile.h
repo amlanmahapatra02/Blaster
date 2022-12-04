@@ -85,7 +85,7 @@ public:
 	float FallOff = 1.0f;
 
 	UPROPERTY(EditAnywhere)
-	float Damage = 20.f;
+	float Damage = 120.0f;
 
 private:
 
