@@ -8,6 +8,7 @@
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
 #include "Blaster/BlasterType/CombatState.h"
+#include "Blaster/BlasterType/Team.h"
 #include "BlasterCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
@@ -34,6 +35,8 @@ public:
 	void Elim(bool bPlayerLeftGame);
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim(bool bPlayerLeftGame);
+
+	void SetTeamColor(ETeam Team);
 
 	virtual void Destroyed() override;
 
@@ -283,11 +286,30 @@ private:
 	UMaterialInstanceDynamic *DynamicDissolveMaterialInstance;
 
 	// Material instance set on the Blueprint, used with the dynamic material instance
-	UPROPERTY(EditAnywhere, Category = Elim)
+	UPROPERTY(VisibleAnywhere, Category = Elim)
 	UMaterialInstance *DissolveMaterialInstance;
 
 	/**
-	 * Elim bot
+	* Team colors
+	*/
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* RedDissolveMatInst;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* RedMaterial;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* BlueDissolveMatInst;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* BlueMaterial;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* OriginalMaterial;
+
+	/**
+	 * Elim Effect
 	 */
 
 	UPROPERTY(EditAnywhere)
@@ -317,6 +339,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AWeapon> DefaultWeaponClass;
+
+	UPROPERTY()
+	class ABlasterGameMode* BlasterGameMode;
 
 public:
 	void SetOverlappingWeapon(AWeapon *Weapon);
