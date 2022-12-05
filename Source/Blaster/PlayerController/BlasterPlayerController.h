@@ -95,6 +95,9 @@ protected:
 	UFUNCTION()
 	void OnRep_ShowTeamScores();
 
+	FString GetInfoText(const TArray<class ABlasterPlayerState*>& Players);
+	FString GetTeamsInfoText(class ABlasterGameState* BlasterGameState);
+
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
