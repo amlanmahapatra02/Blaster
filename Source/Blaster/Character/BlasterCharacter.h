@@ -368,5 +368,7 @@ public:
 	FORCEINLINE void SetHealth(float Amount) { Health = Amount; }
 	FORCEINLINE void SetShield(float Amount) { Shield = Amount; }
 	FORCEINLINE ULagCompensationComponent* GetLagCompensation() const { return LagCompensation; }
+	bool IsHoldingTheFlag();
 	bool IsLocallyReloading();
+	ETeam GetTeam();
 };

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "WeaponTypes.h"
+#include "Blaster/BlasterType/Team.h"
 #include "Weapon.generated.h"
 
 class UTexture2D;
@@ -100,7 +101,7 @@ public:
 	void ShowPickupWidget(bool bShowWidget);
 	void SetWeaponState(EWeaponState State);
 	virtual void Fire(const FVector& HitTarget);
-	void DropWeapon();
+	virtual void DropWeapon();
 	void AddAmmo(int32 AmmoToAdd);
 	void SetHUDAmmo();
 	FVector TraceEndWithScatter(const FVector& HitTarget);
@@ -155,6 +156,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType; 
 
+	UPROPERTY(EditAnywhere)
+	ETeam Team;
+
 	UFUNCTION()
 	void OnRep_WeaponState();
 
@@ -184,6 +188,7 @@ public:
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 	FORCEINLINE float GetDamage() const { return Damage; }
 	FORCEINLINE float GetHeadShotDamage() const { return HeadShotDamage; }
+	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 
 	bool IsEmpty();
 	bool IsFull();
