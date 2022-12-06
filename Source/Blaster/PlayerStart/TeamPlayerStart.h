@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerStart.h"
+#include "Blaster/BlasterType/Team.h"
 #include "TeamPlayerStart.generated.h"
 
 /**
@@ -13,5 +14,8 @@ UCLASS()
 class BLASTER_API ATeamPlayerStart : public APlayerStart
 {
 	GENERATED_BODY()
-	
+
+public:
+	UPROPERTY(EditAnywhere)
+	ETeam Team;
 };
